@@ -29,5 +29,6 @@ class SystemInformation(SystemDetection):
 
     def __init__(self):
         super(SystemInformation, self).__init__()
-        self.network_adapters = psutil.Process().
+        self.network_adapters = []
+        self.info = psutil.Process().oneshot
 
