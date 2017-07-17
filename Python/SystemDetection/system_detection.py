@@ -1,5 +1,6 @@
 import sys
 import platform
+import psutil
 
 
 class SystemDetection(object):
@@ -22,3 +23,11 @@ class SystemDetection(object):
             return platform.linux_distribution()
         except:
             return "N/A"
+
+
+class SystemInformation(SystemDetection):
+
+    def __init__(self):
+        super(SystemInformation, self).__init__()
+        self.network_adapters = psutil.Process().
+
