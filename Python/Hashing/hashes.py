@@ -23,7 +23,7 @@ class Crypto(object):
         self.decryptor = self.cipher.decryptor()
 
     @staticmethod
-    def aes_enc(plain_text, key, iv=b'2222222222222222', keysize=256):
+    def aes_enc(plain_text, key, iv=b'2222222222222222'):
         pt = bytes(Crypto.padder(binascii.a2b_qp(plain_text)))
         mode = modes.CBC(bytes(iv))
         cipher = Cipher(algorithms.AES(key), mode, backend=backend)
@@ -32,7 +32,7 @@ class Crypto(object):
         return cipher_text
 
     @staticmethod
-    def aes_decryption(cipher_text, key, iv=b'2222222222222222', keysize=256):
+    def aes_decryption(cipher_text, key, iv=b'2222222222222222'):
         ct = bytes(binascii.a2b_qp(cipher_text))
         mode = modes.CBC(bytes(iv))
         cipher = Cipher(algorithms.AES(key), mode, backend=backend)
@@ -56,31 +56,43 @@ class Crypto(object):
         return data
 
     @staticmethod
-    def aes_hash(plain_text, key=b'22222222222222220123456789012345', iv=b'2222222222222222', keysize=256):
+    def dark_phoenix6_hash(plain_text, key=b'22222222222222220123456789012345', iv=b'2222222222222222', rounds=13):
+        return Crypto.dp6_hash(plain_text, key, iv, rounds)
+
+    @staticmethod
+    def dp6_hash(plain_text, key=b'22222222222222220123456789012345', iv=b'2222222222222222', rounds=1):
         plain_text_array = bytearray(binascii.a2b_qp(plain_text))
         blocks = Crypto.split_to_blocks(plain_text_array)
         blocks[-1] = Crypto.padder(blocks[-1], 128)
-        cipher_text_blocks = [b'0'] * len(blocks)
-        for i in range(0, len(blocks)):
-            l = [i for i in mod_gen(len(blocks), len(blocks), i)][0]
-            current_ptext = b''.join(blocks[int(i)] for i in l)
-            cipher_text_blocks[i], iv = Crypto.aes_hasher(current_ptext, key, iv, keysize)
+        cipher_text_blocks = Crypto.dp6_algorithm(blocks, iv, key, rounds)
         hast_text = b''.join(cipher_text_blocks)
         return hast_text
 
     @staticmethod
-    def aes_hasher(data, key, iv, keysize):
-        cipher_text = Crypto.aes_enc(data, key, iv, keysize)
+    def dp6_algorithm(blocks, iv, key, rounds=1, count=0):
+        if count == rounds:
+            return blocks
+        else:
+            cipher_text_blocks = [b'0'] * len(blocks)
+            for i in range(0, len(blocks)):
+                l = [i for i in mod_gen(len(blocks), len(blocks), i)][0]
+                current_ptext = b''.join(blocks[int(i)] for i in l)
+                cipher_text_blocks[i], iv = Crypto.aes_hasher(current_ptext, key, iv)
+            return Crypto.dp6_algorithm(cipher_text_blocks, iv, key, rounds, ++count)
+
+    @staticmethod
+    def aes_hasher(data, key, iv):
+        cipher_text = Crypto.aes_enc(data, key, iv)
         iv2 = Crypto.split_to_blocks(cipher_text, 128)
         return iv2[-1], iv2[-1]
 
     @staticmethod
-    def aes_encryption(plain_text, key=b'22222222222222220123456789012345', iv=b'2222222222222222', keysize=256):
+    def aes_encryption(plain_text, key=b'22222222222222220123456789012345', iv=b'2222222222222222'):
         plain_text_array = bytearray(binascii.a2b_qp(plain_text))
         blocks = Crypto.split_to_blocks(plain_text_array)
         blocks[-1] = Crypto.padder(blocks[-1], 128)
         padded_plain_text = b''.join(blocks)
-        ciphertext = Crypto.aes_enc(padded_plain_text, key, iv, keysize)
+        ciphertext = Crypto.aes_enc(padded_plain_text, key, iv)
         return ciphertext
 
     @staticmethod
@@ -144,8 +156,10 @@ class TestCrypto(unittest.TestCase):
         key = b'u\x1eE\xd6\x9bn\x0b\x82\x13\r\xf5:\xc2Ii\xb7K\xa9_\xd3N\x10V\x17\xfb\x1e\xd9\xa7\xa9.\x0b\xe4'
         pt = b'passwordqasswordsasswordmasswordbasswordtasswordcassworddasswordfasswordwasswordvassword'
         iv = bytes(b'2222222222222222')
-        ct = Crypto.aes_hash(pt, key, iv, 256)
+        ct = Crypto.dp6_algorithm(pt, key, iv, 256)
+        ciphertext = binascii.hexlify(ct)
         print(ct)
+        print(ciphertext)
 
 # Won't run if imported
 if __name__ == "__main__":
