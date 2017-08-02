@@ -100,7 +100,7 @@ class StateArray(Matrix):
             self.key = os.urandom(32)
         else:
             self.key = key
-        self.round_keys = getn_keys(self.key)
+        self.round_keys = get_round_keys(self.key)
 
 
     def mix_columns(self):
