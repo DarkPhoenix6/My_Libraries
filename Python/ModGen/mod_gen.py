@@ -1,5 +1,4 @@
 from __future__ import division
-from MultiMethod.multimethod import multimethod
 
 
 def mod_gen(n, m, s=0):

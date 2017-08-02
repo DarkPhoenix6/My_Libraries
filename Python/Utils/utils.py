@@ -192,7 +192,7 @@ def gf_modular_mul(a, b, mod=0x1B):
     return p
 
 
-def gf_div(a, b, mod=0x1B, field_size=8):
+def gf_mod_div(a, b, mod=0x1B, field_size=8):
     """
     Galois Field (256) Multiplication of two Bytes
     :param a:
@@ -216,7 +216,7 @@ def gf_div(a, b, mod=0x1B, field_size=8):
                 v = a
             b_ >>= 1
             a_ >>= 1
-    return v, mod_
+    return v
 
 
 def gf_degree(a):
