@@ -1,7 +1,8 @@
 from __future__ import division
 from bitstring import BitArray
 from MultiMethod.multimethod import multimethod
-from functools import singledispatch
+from copy import deepcopy
+from functools import singledispatch, update_wrapper
 import struct
 import ctypes
 import sys
@@ -9,7 +10,7 @@ AES_modulus2 = 0b100011011
 
 
 def int_to_bytes(data: int, len_bytes=1):
-    return data.to_bytes(len, sys.byteorder)
+    return data.to_bytes(len_bytes, sys.byteorder)
 
 
 def int_to_bytes_hex(data: int):
@@ -323,3 +324,54 @@ def rot_l(n, rotations=1, width=1):
 
 def mask_gen(n):
     return (2 ** n) - 1
+
+
+def deepcopy_with_sharing(obj, shared_attribute_names, memo=None):
+    """
+
+    :param obj:
+    :param shared_attribute_names:
+    :param memo:
+    :return:
+        Deepcopy an object, except for a given list of attributes, which should
+    be shared between the original object and its copy.
+
+    obj is some object
+    shared_attribute_names: A list of strings identifying the attributes that
+        should be shared between the original and its copy.
+    memo is the dictionary passed into __deepcopy__.  Ignore this argument if
+        not calling from within __deepcopy__.
+    """
+    assert isinstance(shared_attribute_names, (list, tuple))
+    shared_attributes = {k: getattr(obj, k) for k in shared_attribute_names}
+
+    if hasattr(obj, '__deepcopy__'):
+        # Do hack to prevent infinite recursion in call to deepcopy
+        deepcopy_method = obj.__deepcopy__
+        obj.__deepcopy__ = None
+
+    for attr in shared_attribute_names:
+        del obj.__dict__[attr]
+
+    clone = deepcopy(obj)
+
+    for attr, val in shared_attributes.iteritems():
+        setattr(obj, attr, val)
+        setattr(clone, attr, val)
+
+    if hasattr(obj, '__deepcopy__'):
+        # Undo hack
+        obj.__deepcopy__ = deepcopy_method
+        del clone.__deepcopy__
+
+    return clone
+
+
+def methoddispatch(func):
+    dispatcher = singledispatch(func)
+
+    def wrapper(*args, **kw):
+        return dispatcher.dispatch(args[1].__class__)(*args, **kw)
+    wrapper.register = dispatcher.register
+    update_wrapper(wrapper, dispatcher)
+    return wrapper
