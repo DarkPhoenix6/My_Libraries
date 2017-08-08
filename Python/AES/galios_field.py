@@ -1,30 +1,57 @@
-from functools import singledispatch
+from __future__ import division
+from copy import deepcopy
+from Utils import methoddispatch
 import Utils
+import sys
 IRREDUCIBLE_POLYNOMIAL_DEC = 0x11B,
 
 
 class GaloisField(object):
-    @singledispatch
-    def __init__(self, value: int, irreducible_polynomial=None, max_field_width=8, degree=None):
+    @methoddispatch
+    def __init__(self, value, irreducible_polynomial=None, max_field_width=None, degree=None):
         """
 
-        :param value: the value
+        :param value: the value as an int, byte, or string of bits
         :param max_field_width: the maximum number of bits for the field
         :param irreducible_polynomial: an irreducible Polynomial AS A GaliosField object
         :param degree: the degree of the polynomial
         """
-        self.dec = value
-        self.bytes = None
-        self.update_byte_str()
-        self.hex = hex(self.dec)[2:]
-        self.bin = reversed(list(self.bin_str[2:]))
-        self.bin = [int(bit) for bit in self.bin]
-        self.irreducible_polynomial = irreducible_polynomial
-        self.field_width = max_field_width                  # an least the degree of the polynomial + 1
-        if degree is not None:
+        if type(value) == type(bytes):
+            self.__init__(self, int.from_bytes(value, sys.byteorder), irreducible_polynomial, max_field_width, degree)
+        elif type(value) == type(str):
+            self.bin = reversed(list(value[2:]))
+            self.bin = [int(bit) for bit in self.bin]
+            self.dec = None
+            self.bytes = None
+            self.hex = None
+            self.irreducible_polynomial = irreducible_polynomial
             self.degree = degree
+            self.__update_from_bin()
+            if max_field_width is not None:
+                self.field_width = max_field_width  # an least the degree of the polynomial + 1
+            else:
+                len(self.bytes) * 8
         else:
-            self.degree = len(self.bin) - 1
+            self.dec = int(value)
+            self.bytes = None
+            self.update_byte_str()
+            self.hex = hex(self.dec)[2:]
+            bin_str = bin(self.dec)
+            self.bin = reversed(list(bin_str[2:]))
+            self.bin = [int(bit) for bit in self.bin]
+            self.irreducible_polynomial = irreducible_polynomial
+            if max_field_width is not None:
+                self.field_width = max_field_width                  # an least the degree of the polynomial + 1
+            else:
+                len(self.bytes) * 8
+            if degree is not None:
+                self.degree = degree
+            else:
+                self.degree = len(self.bin) - 1
+
+    @__init__.register(bytes)
+    def _(self, value: bytes, irreducible_polynomial=None, degree=None):
+        self.__init__(self, int.from_bytes(value, sys.byteorder), irreducible_polynomial, len(value) * 8, degree)
 
     def __str__(self) -> str:
         h = self.hex
@@ -120,20 +147,51 @@ class GaloisField(object):
     def __rpow__(self, other):
         return GaloisField.__pow__(self, other)
 
-    def __hex__(self):
+    def __hex__(self) -> hex:
         return hex(self.dec)
 
-    def __oct__(self):
+    def __oct__(self) -> oct:
         return oct(self.dec)
 
-    def __int__(self):
+    def __int__(self) -> int:
         return self.dec
 
-    def __long__(self):
+    def __long__(self) -> int:
         return self.dec
 
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         return self.bytes
+
+    def __xor__(self, other):
+        return self.dec ^ other
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, deepcopy(v, memo))
+        return result
+
+    def circular_shift_left(self, shift):
+        a = GaloisField.rot_l(self.dec, shift, self.field_width)
+        return GaloisField(a, self.irreducible_polynomial, self.field_width, self.degree)
+
+    def circular_shift_right(self, shift):
+        a = GaloisField.rot_r(self.dec, shift, self.field_width)
+        return GaloisField(a, self.irreducible_polynomial, self.field_width, self.degree)
+
+    def shift_left(self, shift):
+        return self.dec << shift
+
+    def shift_right(self, shift):
+        return self.dec >> shift
 
     def __update_from_decimal(self):
         self.update_byte_str()
@@ -163,6 +221,11 @@ class GaloisField(object):
             bit_length = int(self.dec.bit_length() / 8) + 1
         self.bytes = Utils.int_to_bytes(self.dec, bit_length)
 
+    def set_bin(self, bin_str):
+        self.bin = reversed(list(bin_str[2:]))
+        self.bin = [int(bit) for bit in self.bin]
+        self.__update_from_bin()
+
     def __remove_most_significant_zeros(self):
         last = 0
         for i, a in enumerate(self.bin):
@@ -177,28 +240,6 @@ class GaloisField(object):
     @staticmethod
     def gf_sub(a, b):
         return GaloisField.gf_add(a, b)
-
-    @staticmethod
-    def gf_modular_multiply(a, b, mod=0x1B):
-        """
-        Galois Field (256) Multiplication of two Bytes
-        :param a:
-        :param b:
-        :param mod: x^8 + x^4 + x^3 + x + 1 for AES
-        :return:
-        """
-        a_ = a
-        b_ = b
-        p = bytes(hex(0x00))
-        for i in range(8):
-            if (b_ & 1) != 0:
-                p ^= a_
-            high_bit_set = bytes(a_ & 0x80)
-            a_ <<= 1
-            if high_bit_set != 0:
-                a_ ^= mod
-            b_ >>= 1
-        return p
 
     @staticmethod
     def gf_mod_divide(a, b, mod=0x1B):
@@ -238,58 +279,31 @@ class GaloisField(object):
         return res
 
     @staticmethod
-    def gf_invert(a, mod=0x11B):
-        a_ = a
-        v = mod
-        g1 = 1
-        g2 = 0
-        j = GaloisField.gf_degree(a_) - 8
-        while a_ != 1:
-            if j < 0:
-                a_, v = v, a_
-                g1, g2 = g2, g1
-                j = -j
-            a_ ^= v << j
-            g1 ^= g2 << j
-            a_ %= 256  # Emulating 8-bit overflow
-            g1 %= 256  # Emulating 8-bit overflow
-            j = GaloisField.gf_degree(a_) - GaloisField.gf_degree(v)
-        return g1
-
-    @staticmethod
     def rot_r(n, rotations=1, width=1):
-        """Return a given number of bitwise right rotations of an integer n,
-           for a given bit field width.
+        """Return a given number of circular bitwise right rotations of an integer n,
+           for a given byte field width.
         """
+        n_ = n
         rotations %= width * 8  # width bytes give 8*bytes bits
         if rotations < 1:
-            return n
+            return n_
         mask = GaloisField.mask_gen(8 * width)  # store the mask
-        n &= mask
-        return (n >> rotations) | ((n << (8 * width - rotations)) & mask)  # apply the mask to result
+        n_ &= mask
+        return (n_ >> rotations) | ((n_ << (8 * width - rotations)) & mask)  # apply the mask to result
 
     @staticmethod
     def rot_l(n, rotations=1, width=1):
-        """Return a given number of bitwise left rotations of an integer n,
-           for a given bit field width.
+        """Return a given number of  circular bitwise left rotations of an integer n,
+           for a given byte field width.
         """
+        n_ = n
         rotations %= width * 8  # width bytes give 8*bytes bits
         if rotations < 1:
-            return n
+            return n_
         mask = GaloisField.mask_gen(8 * width)  # store the mask
-        n &= mask
-        return (n << rotations) | ((n >> (8 * width - rotations)) & mask)  # apply the mask to result
+        n_ &= mask
+        return (n_ << rotations) | ((n_ >> (8 * width - rotations)) & mask)  # apply the mask to result
 
     @staticmethod
-    def mask_gen(n):
-        return (2 ** n) - 1
-
-    @staticmethod
-    def affine_transformation_int(a: int, c=0b01100011):
-        a1, a2, a3, a4 = [a for x in range(4)]
-        a ^= (GaloisField.rot_r(a1, 4) ^ GaloisField.rot_r(a2, 5) ^
-              GaloisField.rot_r(a3, 6) ^ GaloisField.rot_r(a4, 7) ^ c)
-        return a
-
-
-@GaloisField.__init__.register()
+    def mask_gen(bit_length):
+        return (2 ** bit_length) - 1

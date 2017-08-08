@@ -6,8 +6,7 @@ import struct
 from cryptography.hazmat.primitives import padding, hashes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
-from Python.ModGen.mod_gen import mod_gen
-from functools import singledispatch
+from Utils import methoddispatch, singledispatch
 from bitstring import BitArray
 from base64 import b16encode
 from pylibscrypt import scrypt
@@ -15,6 +14,7 @@ from ctypes import string_at
 import unittest
 import ctypes
 import math
+from .gen_key_schedule import get_round_keys
 from BitVector import *
 
 AES_modulus = bytes(hex(0b100011011))
@@ -22,7 +22,7 @@ MISSING = object()
 
 
 class Matrix(object):
-    @singledispatch
+    @methoddispatch
     def __init__(self, matrix_list: list, rows=MISSING, columns=MISSING):
         if rows == MISSING and columns == MISSING:
             self.rows = int(math.sqrt(len(matrix_list)))
@@ -89,7 +89,7 @@ MIX_COLUMNS_ARRAY = Matrix([0x02, 0x01, 0x01, 0x03,
 
 
 class StateArray(Matrix):
-    @singledispatch
+    @methoddispatch
     def __init__(self, matrix_list=[0] * 16, rounds=14, key=MISSING):
         if len(matrix_list) != 16:
             Matrix.__init__(self, [0] * 16, 4, 4)
@@ -125,11 +125,7 @@ class StateArray(Matrix):
         s6 = StateArray.gf_add(s5, s2)
         return StateArray.gf_add(s6, s3)
 
-    def add_round_key(self):
-
-
-    def
-
+    def add_round_key(self, round_num):
 
 
 

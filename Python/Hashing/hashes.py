@@ -194,14 +194,14 @@ class Crypto(object):
         return digest.finalize()
 
     @staticmethod
-    def scrypt_512(data, salt_ = MISSING):
+    def scrypt_512(data, salt_=MISSING):
         if salt_ == MISSING:
             salt_ = Crypto.split_to_blocks(data)[0]
         digest = b16encode(scrypt(data, salt_))
         return digest
 
     @staticmethod
-    def add_entropy(data, rounds=):
+    def add_entropy(data, rounds=3):
         return Crypto.add_entropy_sub(data, rounds)
 
     @staticmethod

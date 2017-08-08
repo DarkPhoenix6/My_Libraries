@@ -1,7 +1,6 @@
 import sys
 from BitVector import *
 from Python.ModGen.mod_gen import mod_gen
-from functools import singledispatch
 from AES.gen_table import gen_subbytes_table, gen_inv_subbytes_table
 from Utils.utils import *
 
@@ -36,7 +35,7 @@ def get_round_keys(key: bytes):
     round_keys = [None for i in range(num_rounds + 1)]
     for i in range(num_rounds + 1):
         round_keys[i] = (str(int_to_bytes(key_words[i * 4])) + str(int_to_bytes(key_words[i * 4 + 1])) +
-                         str(int_to_bytes(key_words[i * 4 + 2])) +str(int_to_bytes(key_words[i * 4 + 3]))
+                         str(int_to_bytes(key_words[i * 4 + 2])) + str(int_to_bytes(key_words[i * 4 + 3])))
     print("\n\nRound keys in hex (first key for input block):\n")
     for round_key in round_keys:
         print(round_key)
@@ -108,7 +107,6 @@ def rot_word(word: bytes):
     w3 = word2.pop(3)
     word2.insert(0, w3)
     return word2
-
 
 
 def r_con(word):

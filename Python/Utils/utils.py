@@ -6,6 +6,7 @@ from functools import singledispatch, update_wrapper
 import struct
 import ctypes
 import sys
+import collections
 AES_modulus2 = 0b100011011
 
 
@@ -375,3 +376,93 @@ def methoddispatch(func):
     wrapper.register = dispatcher.register
     update_wrapper(wrapper, dispatcher)
     return wrapper
+
+
+def median_of_three(arr, left, last):
+    """
+    # Get the median of three of the array, changing the array as you do.
+# arr =
+# left =
+# right = Right most index into list to find MOT on
+    :param arr: Data Structure (List)
+    :param left: Left most index into list to find MOT on.
+    :param last: The last index in the subarray
+    :return:
+    """
+    mid = (left + last) / 2
+    if arr[last] < arr[left]:
+        swap(arr, left, last)
+    if arr[mid] < arr[left]:
+        swap(arr, mid, left)
+    if arr[last] < arr[mid]:
+        swap(arr, last, mid)
+    return mid
+
+def median_of_3(arr, left, last):
+    mid = (left + last) / 2
+    if arr[last] < arr[left]:
+        left, last = last, left
+    if arr[mid] < arr[left]:
+        mid, left = left, mid
+    if arr[last] < arr[mid]:
+        mid, last = last, mid
+    return mid
+
+
+
+# Generic Swap for manipulating list data.
+def swap(arr, x, y):
+    temp = arr[x]
+    arr[x] = arr[y]
+    arr[y] = temp
+
+
+def partition(arr, left, last):
+    pivot_pos = median_of_three(arr, left, last)
+    pivot = arr[pivot_pos]
+    swap(arr, left, pivot_pos)
+    pivot_pos = left
+
+    for position in range(left + 1, last + 1):
+        if arr[position] < pivot:
+            swap(arr, position, pivot_pos + 1)
+            swap(arr, pivot_pos, pivot_pos + 1)
+            pivot_pos += 1
+    return pivot_pos
+
+
+def quicksort(arr, left, last):
+    if left < last:
+        p = partition(arr, left, last)
+        quicksort(arr, left, p - 1)
+        quicksort(arr, p + 1, last)
+
+
+def generate_matrix(matrix_list, rows, columns):
+    m = [[0 for x in range(columns)] for y in range(rows)]
+
+    count = 0
+    for i in range(columns):
+        for j in range(rows):
+            m[j][i] = matrix_list[count]
+            count += 1
+    return m
+
+
+def transpose(matrix, rows, columns):
+    matrix_list = []
+    for i in range(rows):
+        for j in range(columns):
+            matrix_list.append(matrix[i][j])
+    matrix_b = generate_matrix(matrix_list, columns, rows)
+    return matrix_b
+
+
+def breadth_first_search(graph, root):
+    visited, queue = set(), collections.deque([root])
+    while queue:
+        vertex = queue.popleft()
+        for neighbour in graph[vertex]:
+            if neighbour not in visited:
+                visited.add(neighbour)
+                queue.append(neighbour)
