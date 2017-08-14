@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import division, print_function
 from bitstring import BitArray
 from MultiMethod.multimethod import multimethod
 from copy import deepcopy
@@ -7,6 +7,7 @@ import struct
 import ctypes
 import sys
 import collections
+import math
 AES_modulus2 = 0b100011011
 
 
@@ -389,7 +390,7 @@ def median_of_three(arr, left, last):
     :param last: The last index in the subarray
     :return:
     """
-    mid = (left + last) / 2
+    mid = (left + last) // 2
     if arr[last] < arr[left]:
         swap(arr, left, last)
     if arr[mid] < arr[left]:
@@ -397,6 +398,7 @@ def median_of_three(arr, left, last):
     if arr[last] < arr[mid]:
         swap(arr, last, mid)
     return mid
+
 
 def median_of_3(arr, left, last):
     mid = (left + last) / 2
@@ -409,9 +411,8 @@ def median_of_3(arr, left, last):
     return mid
 
 
-
-# Generic Swap for manipulating list data.
 def swap(arr, x, y):
+    # Generic Swap for manipulating list data.
     temp = arr[x]
     arr[x] = arr[y]
     arr[y] = temp
@@ -466,3 +467,185 @@ def breadth_first_search(graph, root):
             if neighbour not in visited:
                 visited.add(neighbour)
                 queue.append(neighbour)
+
+
+def left_child(i):
+    return 2 * i + 1
+
+
+def percolate_down(arr, index, size, begin=0):
+    """
+
+    :param arr: the Array
+    :param index: is the logical index from which to percolate down
+    :param size: Is the logical array size
+    :param begin: The real index of the beginning of the (sub)Array
+    :return:
+    """
+    walkdown(arr, index, size, begin)
+
+
+def walkdown(arr, index, size, begin=0):
+    """
+    exchange parent with > child until parent in place
+    :param arr: the Array
+    :param index: is the logical index from which to percolate down
+    :param size: Is the logical array size
+    :param begin: The real index of the beginning of the (sub)Array
+    :return:
+    """
+
+    ref = arr[begin + index]
+    while left_child(index) < size:
+        child = left_child(index)
+        if child != size - 1 and arr[child + begin] < arr[child + 1 + begin]:
+            child += 1
+        if ref < arr[child + begin]:
+            swap(arr, (index + begin), (child + begin))
+            index = child
+        else:
+            break
+    arr[begin + index] = ref
+
+
+def heapsort(arr, left, right):
+    """
+    
+    :param arr: 
+    :param left: The logical beginning of the array
+    :param right: The logical ending of the array
+    :return: 
+    """
+
+    y = ((right - left) // 2)
+    size = (right - left + 1)
+    # first form the heap
+    # y starts at last node to have child
+    while y >= 0:
+        # Build heap(rearrange array)
+        walkdown(arr, y, size, left)
+        y -= 1
+    # y will now point to current last logical array index
+    y = size - 1
+    while y > 0:
+        # swap root & B.R. leaf
+        # Move current root to end
+        swap(arr, (0 + left), (y + left))
+
+        # Call walkdown on reduced heap
+        walkdown(arr, 0, y, left)
+        y -= 1
+
+
+def introsort(arr, left, right, depth=None):
+    """
+
+    :param arr:
+    :param left:
+    :param right:
+    :param depth:
+    :return:
+    """
+
+    if depth is None:
+        depth = math.log((len(arr) ** 2), 10)
+    depth -= 1
+    if depth > 0:
+        # If depth reaches 0 the subArray gets HeapSorted
+        if left < right:
+            # test for Base Case Left == right.
+            # Partition the array and get pivot
+            p = partition(arr, left, right)
+
+            # Sort the portion before the pivot point.
+            introsort(arr, left, (p - 1), depth)
+
+            # Sort the portion after the pivot point.
+            introsort(arr, (p + 1), right, depth)
+        else:
+            if left < right:
+                heapsort(arr, left, right)
+
+
+def bfs_paths(graph, start, goal):
+    queue = [(start, [start])]
+    while queue:
+        (vertex, path) = queue.pop(0)
+        for next in graph[vertex] - set(path):
+            if next == goal:
+                yield path + [next]
+            else:
+                queue.append((next, path + [next]))
+
+
+def bfs(graph, start):
+    visited, queue = set(), [start]
+    while queue:
+        vertex = queue.pop(0)
+        if vertex not in visited:
+            visited.add(vertex)
+            queue.extend(graph[vertex] - visited)
+    return visited
+
+
+def dfs_paths2(graph, start, goal):
+    stack = [(start, [start])]
+    while stack:
+        (vertex, path) = stack.pop()
+        for next in graph[vertex] - set(path):
+            if next == goal:
+                yield path + [next]
+            else:
+                stack.append((next, path + [next]))
+
+
+def dfs_paths(graph, start, goal, path=None):
+    if path is None:
+        path = [start]
+    if start == goal:
+        yield path
+    for next in graph[start] - set(path):
+        yield from dfs_paths(graph, next, goal, path + [next])
+
+
+def dfs2(graph, start):
+    visited, stack = set(), [start]
+    while stack:
+        vertex = stack.pop()
+        if vertex not in visited:
+            visited.add(vertex)
+            stack.extend(graph[vertex] - visited)
+    return visited
+
+
+def dfs(graph, start, visited=None):
+    if visited is None:
+        visited = set()
+    visited.add(start)
+    for next in graph[start] - visited:
+        dfs(graph, next, visited)
+    return visited
+
+
+def shortest_path(graph, start, goal):
+    try:
+        return next(bfs_paths(graph, start, goal))
+    except StopIteration:
+        return None
+
+
+def shortest_of_the_short(graph, start, gates):
+    distances = []
+    paths_ = []
+    for i in gates:
+        paths = shortest_path(graph, start, i)
+        if paths is not None:
+            distances.append(len(paths))
+            paths_.append(paths)
+    min_len = min(distances)
+    path = paths_[distances.index(min_len)]
+    return path
+
+
+def q(cond, on_true, on_false):
+    return {True: on_true, False: on_false}[cond is True]

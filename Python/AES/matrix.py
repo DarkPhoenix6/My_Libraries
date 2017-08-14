@@ -102,7 +102,6 @@ class StateArray(Matrix):
             self.key = key
         self.round_keys = get_round_keys(self.key)
 
-
     def mix_columns(self):
 
         s = StateArray()
@@ -124,8 +123,6 @@ class StateArray(Matrix):
         s5 = StateArray.gf_add(s0, s1)
         s6 = StateArray.gf_add(s5, s2)
         return StateArray.gf_add(s6, s3)
-
-    def add_round_key(self, round_num):
 
 
 
