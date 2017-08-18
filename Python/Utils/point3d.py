@@ -1,5 +1,5 @@
 from .utils import methoddispatch
-
+import math
 
 class Point3D(object):
     """ Simple 2D Point2D representation with some utility functions"""
@@ -189,7 +189,7 @@ class Point3D(object):
             tot_vec = tot_vec.negate()
         new_x = self.x + bisect * tot_vec.x
         new_y = self.y + bisect * tot_vec.y
-        return Point2D(new_x, new_y)
+        return Point3D(new_x, new_y)
 
     def inside_quadrilateral(self, quad):
         """ Takes a list of 4 Point2D objects and determines if this point is contained within them

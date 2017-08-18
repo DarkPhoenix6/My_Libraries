@@ -2,12 +2,15 @@ from __future__ import division, print_function
 from bitstring import BitArray
 from MultiMethod.multimethod import multimethod
 from copy import deepcopy
-from functools import singledispatch, update_wrapper
+from .memo import memoize
+from functools import singledispatch, update_wrapper, reduce, recursive_repr
 import struct
 import ctypes
 import sys
 import collections
 import math
+from fractions import Fraction
+from collections import Counter
 AES_modulus2 = 0b100011011
 pie = math.pi * math.e
 
@@ -20,27 +23,6 @@ def methoddispatch(func):
     wrapper.register = dispatcher.register
     update_wrapper(wrapper, dispatcher)
     return wrapper
-
-
-def memoize(f):
-    memo = {}
-
-    def helper(x):
-        if x not in memo:
-            memo[x] = f(x)
-        return memo[x]
-    return helper
-
-
-class Memoize:
-    def __init__(self, fn):
-        self.fn = fn
-        self.memo = {}
-
-    def __call__(self, *args):
-        if args not in self.memo:
-            self.memo[args] = self.fn(*args)
-        return self.memo[args]
 
 
 def int_to_bytes(data: int, len_bytes=1):
@@ -536,3 +518,202 @@ def fib(n):
         return 1
     else:
         return fib(n - 1) + fib(n - 2)
+
+
+def n_in_arithmetic_sequence(a, n, d):
+    """
+
+    :param a: is the first term
+    :param n: is the term number
+    :param d: is the difference between the terms (called the "common difference")
+    :return: the nth number in an arithmetic sequence / Progression
+    """
+    return a + d * (n - 1)
+
+
+def num_of_terms_in_arithmetic_sequence(a, d, number):
+    return number
+
+
+def sum_arithmetic_series(a, n, d):
+
+    return (n / 2) * (2 * a + (n - 1) * d)
+
+
+def sum_multiples_of_n_below_k(n, k):
+    m = (k-1) // n
+    return n * m * (m+1) // 2
+
+
+def largest_prime_factor(num, div=2):
+    while div < num:
+        if num % div == 0 and num/div > 1:
+            num = num / div
+            div = 2
+        else:
+            div = div + 1
+    return num
+
+
+def lcm(a, b):
+    if a > b:
+        greater = a
+    else:
+        greater = b
+
+    while True:
+        if greater % a == 0 and greater % b == 0:
+            lcm = greater
+            break
+        greater += 1
+
+    return lcm
+
+
+def get_lcm_for(your_list):
+    return reduce(lambda x, y: lcm(x, y), your_list)
+
+
+def findDivisor(num):
+    # 2,3 are the most common divisor for many numbers hence I go by divisor of 2,3
+    # if not then by the same number as divisor
+    if num%2 == 0:
+        return 2
+    elif num%3==0:
+        return 3
+    return num
+
+
+def findLCM(lcmArray):
+    lcm = 1
+    while len(lcmArray) > 0:
+        minOfLCMArray = min(lcmArray)
+        divisor = findDivisor(minOfLCMArray)
+
+        for x in range(0, len(lcmArray)):
+            quotient = lcmArray[x] / divisor
+            remainder = lcmArray[x] % divisor
+            if remainder == 0:
+                lcmArray[x] = quotient
+
+        lcm *= divisor
+        minOfLCMArray = min(lcmArray)
+        if minOfLCMArray == 1:
+            lcmArray.remove(minOfLCMArray)
+    return lcm
+
+
+def round_to_tenths(a) -> float:
+    return int(a * 10) / 10
+
+
+def round_to_nearest_tenth(a) -> float:
+    if (10 * a) >= (int((a * 10)) + 0.5):
+        return int(1 + a * 10) / 10
+    else:
+        return int(a * 10) / 10
+
+
+def mean(arr, n):
+    res = 0
+    for i in range(n):
+        res += arr[i]
+    return round_to_tenths(res / n)
+
+
+def median(arr: list):
+    i = len(arr)
+    if i != 3:
+        if (i % 2) == 0:
+            return mean_of_2_median(arr, i)
+        else:
+            arr2 = deepcopy(arr)
+            arr2.sort()
+            return arr2[i // 2]
+    else:
+        arr2 = deepcopy(arr)
+        if arr2[2] < arr2[0]:
+            swap(arr2, 2, 0)
+        if arr2[1] < arr2[0]:
+            swap(arr2, 1, 0)
+        if arr2[2] < arr2[1]:
+            swap(arr2, 2, 1)
+        return arr2[1]
+
+
+def mean_of_2_median(arr, n):
+    arr2 = deepcopy(arr)
+    arr2.sort()
+    a1 = n // 2
+    a2 = a1 - 1
+    res = (arr2[a1] + arr2[a2]) / 2
+    return res
+
+
+def mode(arr):
+    counter = Counter(arr)
+    max_count = max(counter.values())
+    mode = [k for k, v in counter.items() if v == max_count]
+    mode.sort()
+    return mode
+
+
+def array_sum(ar):
+    k = 0
+    for i in ar:
+        k += i
+    return k
+
+
+def weighted_mean(arr: list, weights: list):
+    denominator = numerator = 0
+    for i in range(len(arr)):
+        numerator += (arr[i] * weights[i])
+        denominator += weights[i]
+    if denominator != 0:
+        return round_to_tenths((numerator / denominator))
+    else:
+        raise ZeroDivisionError
+
+
+def reduce_fraction(numerator, denominator):
+    greatest_factor = abs(math.gcd(numerator, denominator))
+    if -1 < greatest_factor <= 1:
+        return numerator, denominator
+    else:
+        return reduce_fraction(numerator // greatest_factor, denominator // greatest_factor)
+
+
+def swap(arr, x, y):
+    # Generic Swap for manipulating list data.
+    temp = arr[x]
+    arr[x] = arr[y]
+    arr[y] = temp
+
+
+def median_of_3(arr, left, last):
+    mid = (left + last) / 2
+    if arr[last] < arr[left]:
+        left, last = last, left
+    if arr[mid] < arr[left]:
+        mid, left = left, mid
+    if arr[last] < arr[mid]:
+        mid, last = last, mid
+    return mid
+
+
+def median_of_3_of_m_o_3(arr, left, middle, last):
+    if arr[last] < arr[left]:
+        left, last = last, left
+    if arr[middle] < arr[left]:
+        middle, left = left, middle
+    if arr[last] < arr[middle]:
+        middle, last = last, middle
+    return middle
+
+
+def ninther_qsort(arr, left, last):
+    l = last - left
+    l_left = (l // 3 + 1) + left
+    l_left2 = (2 * l // 3 + 1) + left
+    return median_of_3_of_m_o_3(arr, median_of_3(arr, left, l_left), median_of_3(arr, l_left, l_left2), median_of_3(arr, l_left2, last))

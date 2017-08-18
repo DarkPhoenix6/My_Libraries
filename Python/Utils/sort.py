@@ -1,5 +1,9 @@
 from __future__ import division
 import math
+from copy import deepcopy
+from .utils import mean_of_2_median, ninther_qsort
+
+
 def median_of_three(arr, left, last):
     """
     # Get the median of three of the array, changing the array as you do.
@@ -21,6 +25,26 @@ def median_of_three(arr, left, last):
     return mid
 
 
+def median(arr: list):
+    i = len(arr)
+    if i != 3:
+        if (i % 2) == 0:
+            return mean_of_2_median(arr, i)
+        else:
+            arr2 = deepcopy(arr)
+            arr2.sort()
+            return arr2[i // 2]
+    else:
+        arr2 = deepcopy(arr)
+        if arr2[2] < arr2[0]:
+            swap(arr2, 2, 0)
+        if arr2[1] < arr2[0]:
+            swap(arr2, 1, 0)
+        if arr2[2] < arr2[1]:
+            swap(arr2, 2, 1)
+        return arr2[1]
+
+
 def median_of_3(arr, left, last):
     mid = (left + last) / 2
     if arr[last] < arr[left]:
@@ -40,7 +64,10 @@ def swap(arr, x, y):
 
 
 def partition(arr, left, last):
-    pivot_pos = median_of_three(arr, left, last)
+    if (left - last) < 500:
+        pivot_pos = median_of_three(arr, left, last)
+    else:
+        pivot_pos = ninther_qsort(arr, left, last)
     pivot = arr[pivot_pos]
     swap(arr, left, pivot_pos)
     pivot_pos = left

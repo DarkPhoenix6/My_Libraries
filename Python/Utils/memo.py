@@ -1,4 +1,4 @@
-def memoize(f):
+def memoize3(f):
     memo = {}
     def helper(x):
         if x not in memo:
@@ -11,13 +11,14 @@ class Memoize:
     def __init__(self, fn):
         self.fn = fn
         self.memo = {}
+
     def __call__(self, *args):
         if args not in self.memo:
-	    self.memo[args] = self.fn(*args)
+            self.memo[args] = self.fn(*args)
         return self.memo[args]
 
 
-def memoize(function):
+def memoize2(function):
     from functools import wraps
 
     memo = {}
@@ -36,7 +37,9 @@ def memoize(function):
 def memoize(fn):
     """returns a memoized version of any function that can be called
     with the same list of arguments.
-    Usage: foo = memoize(foo)"""
+    Usage: foo = memoize(foo)
+    WORKING!!!
+    """
 
     def handle_item(x):
         if isinstance(x, dict):
