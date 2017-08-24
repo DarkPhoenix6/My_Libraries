@@ -15,7 +15,7 @@ def median_of_three(arr, left, last):
     :param last: The last index in the subarray
     :return:
     """
-    mid = (left + last) // 2
+    mid = left + (last - left) // 2
     if arr[last] < arr[left]:
         swap(arr, left, last)
     if arr[mid] < arr[left]:
@@ -46,7 +46,7 @@ def median(arr: list):
 
 
 def median_of_3(arr, left, last):
-    mid = (left + last) / 2
+    mid = left + (last - left) // 2
     if arr[last] < arr[left]:
         left, last = last, left
     if arr[mid] < arr[left]:
@@ -78,6 +78,19 @@ def partition(arr, left, last):
             swap(arr, pivot_pos, pivot_pos + 1)
             pivot_pos += 1
     return pivot_pos
+
+
+def partition_Lomuto (arr, left, last):
+    pivot = arr[last]
+    pivot_pos = left - 1
+    for position in range(left, last + 1):
+        if arr[position] < pivot:
+            pivot_pos += 1
+            swap(arr, position, pivot_pos)
+    if arr[last] < arr[pivot_pos + 1]:
+        swap(arr, pivot_pos + 1, last)
+    print(*arr, sep=" ", end="\n", file=sys.stdout)
+    return pivot_pos + 1
 
 
 def quicksort(arr, left, last):

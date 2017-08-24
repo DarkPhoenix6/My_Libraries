@@ -34,6 +34,9 @@ class Point2D(object):
         """
         return {"x": self.x, "y": self.y}
 
+    def pythagoras_find_c(self):
+        return math.sqrt(self.x ** 2 + self.y ** 2)
+
     def slope(self, other_point):
         """ Calculates the slope between this point and another Point2D
 
@@ -192,13 +195,14 @@ class MarsLander(object):
         self.mars = mars
         self.current_position = Point2D(x, y)
         self.current_velocity = Point2D(h_velocity, v_velocity)
+        self.velocity_angle = math.atan2(self.current_velocity.y, self.current_velocity.x)
         self.fuel = fuel
         self.rotation = rotation
         self.power = power
 
     def calculate_trajectory(self, target: Point2D):
         temp = self.current_position + (self.current_velocity * 3)
-        print("Debug messages... Calculating Trajectory", temp, target, file = sys.stderr)
+        print("Debug messages... Calculating Trajectory", temp, target, file=sys.stderr)
         if temp.x - target.x != 0:
             trajectory = temp.angle_deg(target)
             # TODO
@@ -217,9 +221,25 @@ class MarsLander(object):
         else:
             return 0
 
+    def angle_of_reach(self, distance):
+        return (1 / 2) * math.asin(self.mars.gravity * distance / (self.current_velocity.pythagoras_find_c() ** 2))
+
+    def distance_traveled(self):
+        v = self.current_velocity.pythagoras_find_c()
+        theta = self.velocity_angle
+        g = self.mars.gravity
+        result1 = v * math.cos(theta) / g
+        result2 = (v * math.sin(theta)) + math.sqrt(((v * math.sin(theta)) ** 2) + 2 * g * self.current_position.y)
+        return result1 * result2
+
+    def time_of_flight(self):
+        v = self.current_velocity.pythagoras_find_c()
+        d = self.distance_traveled()
+        result =
+        return d /
     def landing_sequence(self):
-        print("Debug messages... Initiating Landing Sequence", file=sys.stderr)
-        if (self.mars.flat_spots[0].x) <= self.current_position.x <= (self.mars.flat_spots[1].x):
+        print("Debug messages... Initiaing Landing Sequence", file=sys.stderr)
+        if (self.mars.flat_spots[0].x + 10) <= self.current_position.x <= (self.mars.flat_spots[1].x - 10):
             if -20 < self.current_velocity.x < 20:
                 print("Debug messages... 1", file=sys.stderr)
                 if self.current_velocity.y <= -30:

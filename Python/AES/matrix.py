@@ -44,9 +44,12 @@ class Matrix(object):
         count = 0
         for i in range(columns):
             for j in range(rows):
-                m[j][i]= matrix_list[count]
+                m[j][i] = matrix_list[count]
                 count += 1
         return m
+
+    def reverse_column(self, column):
+
 
     @staticmethod
     def transpose(matrix):

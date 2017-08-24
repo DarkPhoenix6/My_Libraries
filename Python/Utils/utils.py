@@ -572,34 +572,34 @@ def lcm(a, b):
 
 def get_lcm_for(your_list):
     return reduce(lambda x, y: lcm(x, y), your_list)
+reduce()
 
-
-def findDivisor(num):
+def find_divisor(num):
     # 2,3 are the most common divisor for many numbers hence I go by divisor of 2,3
     # if not then by the same number as divisor
-    if num%2 == 0:
+    if num % 2 == 0:
         return 2
-    elif num%3==0:
+    elif num % 3 == 0:
         return 3
     return num
 
 
-def findLCM(lcmArray):
+def find__l_c_m(lcm_array):
     lcm = 1
-    while len(lcmArray) > 0:
-        minOfLCMArray = min(lcmArray)
-        divisor = findDivisor(minOfLCMArray)
+    while len(lcm_array) > 0:
+        min_of_l_c_m_array = min(lcm_array)
+        divisor = find_divisor(min_of_l_c_m_array)
 
-        for x in range(0, len(lcmArray)):
-            quotient = lcmArray[x] / divisor
-            remainder = lcmArray[x] % divisor
+        for x in range(0, len(lcm_array)):
+            quotient = lcm_array[x] / divisor
+            remainder = lcm_array[x] % divisor
             if remainder == 0:
-                lcmArray[x] = quotient
+                lcm_array[x] = quotient
 
         lcm *= divisor
-        minOfLCMArray = min(lcmArray)
-        if minOfLCMArray == 1:
-            lcmArray.remove(minOfLCMArray)
+        min_of_l_c_m_array = min(lcm_array)
+        if min_of_l_c_m_array == 1:
+            lcm_array.remove(min_of_l_c_m_array)
     return lcm
 
 
@@ -692,7 +692,7 @@ def swap(arr, x, y):
 
 
 def median_of_3(arr, left, last):
-    mid = (left + last) / 2
+    mid = (left + last) // 2
     if arr[last] < arr[left]:
         left, last = last, left
     if arr[mid] < arr[left]:
@@ -714,6 +714,6 @@ def median_of_3_of_m_o_3(arr, left, middle, last):
 
 def ninther_qsort(arr, left, last):
     l = last - left
-    l_left = (l // 3 + 1) + left
-    l_left2 = (2 * l // 3 + 1) + left
+    l_left = (l // 3) + 1 + left
+    l_left2 = (l // 3) * 2 + 1 + left
     return median_of_3_of_m_o_3(arr, median_of_3(arr, left, l_left), median_of_3(arr, l_left, l_left2), median_of_3(arr, l_left2, last))
