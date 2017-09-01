@@ -510,6 +510,13 @@ def q(cond, on_true, on_false):
     return {True: on_true, False: on_false}[cond is True]
 
 
+def factorial(n, acc=1):
+    if n <= 1:
+        return acc
+    else:
+        return factorial(n - 1, acc * n)
+
+
 @memoize
 def fib(n):
     if n == 0:
