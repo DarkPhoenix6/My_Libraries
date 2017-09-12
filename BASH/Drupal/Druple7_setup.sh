@@ -370,3 +370,4 @@ ip_tables
 
 
 rm -- "$0"
+exit
