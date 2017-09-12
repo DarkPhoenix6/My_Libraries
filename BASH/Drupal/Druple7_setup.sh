@@ -44,7 +44,7 @@ apt-get update -q
 apt-get upgrade -y -q
 apt-get dist-upgrade -y -q
 apt-get install -y -q debconf-utils sudo ipcalc
-apt-get install pwgen curl php5-cli git quotatool expect -y -q
+apt-get install pwgen curl git quotatool expect -y -q
 }
 
 
@@ -124,11 +124,11 @@ echo "[+] Installing Apache..."
 #apt-get update -q 1> /dev/null
 echo "[+] Installing MYSQL..."
 apt-get install -q -y -o Dpkg::Options::="--force-confdef" \
--o Dpkg::Options::="--force-confold" apache2 mysql-server libapache2-mod-python
+-o Dpkg::Options::="--force-confold" apache2 mysql-server
 
 ##### PHP #####
 echo "[+] Installing PHP..."
-apt-get install php5 php-pear php5-mysql -y -q
+apt-get install php php-pear libapache2-mod-php php-cli php-mcrypt php-mysql -y -q
 
 
 ##### PHPMyAdmin #####
@@ -154,7 +154,7 @@ a2enmod rewrite ssl
 
 #Enable the virtual host for HTTPS
 a2ensite default-ssl
-
+ufw allow in "Apache Full"
 service apache2 reload
 
 
