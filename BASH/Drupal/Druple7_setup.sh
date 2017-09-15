@@ -137,7 +137,17 @@ apt-get install php php-pear libapache2-mod-php php-cli php-mcrypt php-mysql -y 
 echo "[+] Installing PHPMyAdmin..."
 apt-get install -q -y -o Dpkg::Options::="--force-confdef" \
 -o Dpkg::Options::="--force-confold" phpmyadmin
-
+#sed -ri "
+#	/<Directory \/usr\/share\/phpmyadmin>/ {
+#		N
+#			/\tOptions FollowSymLinks/ {
+#				N
+#					/\tDirectoryIndex index.php/ {
+#						s:(<Directory /usr/share/phpmyadmin>\n\tOptions FollowSymLinks\n\tDirectoryIndex index.php):\1\n\tAllowOverride All:
+#					}
+#			}
+#	}
+#" /etc/phpmyadmin/apache.conf
 ##### Apache Config #####
 # Enable Clean htaccess for Drupal ## Clean URLs
 sed -ri "
@@ -204,10 +214,18 @@ service mysql restart
 
 function lab1
 {
-apt-get install libxss1 libappindicator1 libindicator7
+apt-get install libxss1 libappindicator1 libindicator7 -y -q
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo dpkg -i google-chrome*.deb
-apt-get install gphpedit
+apt-get install gphpedit -y -q
+apt-get install shutter -y -q
+echo "
+<?php
+phpinfo();
+?>" >> /var/www/html/info.php
+chown -R www-data:www-data /var/www/
+gsettings set com.canonical.indicator.session show-real-name-on-panel true
+
 }
 function ip_tables
 {
