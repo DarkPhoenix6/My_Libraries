@@ -50,12 +50,14 @@ apt-get install pwgen curl git quotatool expect -y -q
 
 function passwords
 {
-SQL_root_passwd=$(pwgen -s 20 1)
+SQL_root_passwd="letmein"
+#SQL_root_passwd=$(pwgen -s 20 1)
 PHPMyAdmin_user_passwd=$(pwgen -s 20 1)
 PHPMyAdmin_setup_passwd=$(pwgen -s 20 1)
 
 drupaluser="drupal7e_dbuser"
-drupaluser_passwd=$(pwgen -s 25 1)
+drupaluser_passwd="letmein"
+#drupaluser_passwd=$(pwgen -s 25 1)
 drupal_DB="drupal7e_drupalville"
 
 mkdir $Setup_dir\MYSQL
@@ -197,10 +199,16 @@ echo "innodb_file_format=barracuda" >> /etc/mysql/my.cnf
 echo "innodb_file_per_table=true" >> /etc/mysql/my.cnf
 service mysql restart
 ##### Secure MYSQL
-expect $work_dir/mysql_secure.exp $SQL_root_passwd
+#expect $work_dir/mysql_secure.exp $SQL_root_passwd
 }
 
-
+function lab1
+{
+apt-get install libxss1 libappindicator1 libindicator7
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo dpkg -i google-chrome*.deb
+apt-get install gphpedit
+}
 function ip_tables
 {
 
@@ -265,6 +273,7 @@ $IPTABLES -A INPUT -p tcp --dport 53 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A INPUT -p udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A INPUT -p tcp --dport 123 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A INPUT -p tcp --dport 943 -m conntrack --ctstate NEW -j ACCEPT
+$IPTABLES -A INPUT -p tcp --dport 10000 -m conntrack --ctstate NEW -j ACCEPT
 
 # SMTP and SMTPS #
 $IPTABLES -A INPUT -p tcp --dport 25 -m conntrack --ctstate NEW -j ACCEPT
@@ -312,7 +321,7 @@ $IPTABLES -A OUTPUT -p tcp --dport 123 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p udp --dport 123 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --sport 123 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p udp --sport 123 -m conntrack --ctstate NEW -j ACCEPT
-
+$IPTABLES -A OUTPUT -p udp --dport 10000 -m conntrack --ctstate NEW -j ACCEPT
 
 # SMTP and SMTPS #
 $IPTABLES -A OUTPUT -p tcp --dport 25 -m conntrack --ctstate NEW -j ACCEPT
