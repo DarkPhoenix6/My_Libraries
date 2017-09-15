@@ -1,11 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import re
 import sys
 import fileinput
 
 # passed in parameters
 file = sys.argv[1]
-
 drupal_db = sys.argv[2]  # "drupal7e_drupalville"
 username = sys.argv[3]
 passwd = sys.argv[4]
@@ -22,9 +21,9 @@ to_write = "$databases['default']['default'] = array(\n" \
 
 
 def to_file():
-    for line in fileinput.input(files=file, inplace=1):
-        line = re.sub(find_str, to_write, line.rstrip())
-        print(line)
+    with fileinput.FileInput(files=file, inplace=True, backup='.bak') as file2:
+        for line in file2:
+            print(line.replace(find_str, to_write), end='')
 
 
 def main():

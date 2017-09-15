@@ -69,6 +69,11 @@ echo '[client]' >> /root/.my.cnf
 echo "password=$SQL_root_passwd" >> /root/.my.cnf
 chmod u=rw,go= /root/.my.cnf
 
+touch /etc/.my.cnf
+echo '[client]' >> /etc/.my.cnf
+echo "password=$SQL_root_passwd" >> /etc/.my.cnf
+chmod u=rw,go= /etc/.my.cnf
+
 touch $Setup_dir\MYSQL/pass.txt
 echo "$SQL_root_passwd" >> $Setup_dir\MYSQL/pass.txt
 chmod u=rw,go= $Setup_dir\MYSQL/pass.txt
@@ -184,7 +189,7 @@ tar --strip-components=1 -xvzf drupal-7.56.tar.gz
 cp /var/www/html/sites/default/default.settings.php /var/www/html/sites/default/settings.php
 chown -R www-data:www-data /var/www/
 
-python $work_dir/Drupal7_setup.py /var/www/html/sites/default/settings.php $drupal_DB $drupaluser $drupaluser_passwd
+python3 $work_dir/drupal7.py /var/www/html/sites/default/settings.php $drupal_DB $drupaluser $drupaluser_passwd
 }
 #cd /var/www
 function MySQL_setup
