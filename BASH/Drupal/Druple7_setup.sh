@@ -375,8 +375,9 @@ initial_dependencies
 passwords
 install_func
 MySQL_setup
+lab1
 ip_tables
 
 
-rm -- "$0"
+#rm -- "$0"
 exit
