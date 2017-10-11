@@ -34,7 +34,7 @@ class Matrix(object):
             self.rows = int(rows)
             self.rows = int(len(matrix_list)/self.columns)
 
-        self.state = Matrix.generate_matrix(matrix_list, self.rows, self.columns)
+        self.state = Matrix.generate_matrix(matrix_list, self.rows, self.columns)  # self.state[row][column]
 
     @staticmethod
     @singledispatch
@@ -48,7 +48,7 @@ class Matrix(object):
                 count += 1
         return m
 
-    def reverse_column(self, column):
+    #def reverse_column(self, column):
 
 
     @staticmethod
@@ -84,6 +84,10 @@ class Matrix(object):
             b >>= 1
         return p
 
+    def rotate_matrix_left(self):
+
+
+
 
 MIX_COLUMNS_ARRAY = Matrix([0x02, 0x01, 0x01, 0x03,
                             0x03, 0x02, 0x01, 0x01,
@@ -112,6 +116,10 @@ class StateArray(Matrix):
             for i in range(4):
                 s.state[i][j] = StateArray.mul_column(self.state, i, j)
         self.state = s.state
+
+    def shift_rows(self):
+        for i in range(4):
+            self.state[i][0-i], self.state[i][1-i], self.state[i][2-i], self.state[i][3-i] = self.state[i][0], self.state[i][1], self.state[i][2], self.state[i][3]
 
     @staticmethod
     def mul_column(state, row, column):
@@ -145,6 +153,7 @@ SUBBYTES = Matrix([0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0
                    0xc1, 0x1d, 0x9e, 0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55,
                    0x28, 0xdf, 0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb,
                    0x16])
+
 SUBBYTESINVERSE = Matrix([0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7,
                           0xfb, 0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde,
                           0xe9, 0xcb, 0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42,

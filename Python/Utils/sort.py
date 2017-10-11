@@ -141,7 +141,12 @@ def walkdown(arr, index, size, begin=0):
 
 def heapsort(arr, left, right):
     """
-
+        fails on 31415926535897932384626433832795
+        1
+        3
+        10
+        3
+        5
     :param arr:
     :param left: The logical beginning of the array
     :param right: The logical ending of the array

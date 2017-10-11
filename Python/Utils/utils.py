@@ -724,3 +724,93 @@ def ninther_qsort(arr, left, last):
     l_left = (l // 3) + 1 + left
     l_left2 = (l // 3) * 2 + 1 + left
     return median_of_3_of_m_o_3(arr, median_of_3(arr, left, l_left), median_of_3(arr, l_left, l_left2), median_of_3(arr, l_left2, last))
+
+
+@memoize
+def pow_func(base, exp):
+    """
+
+    :param base:
+    :param exp:
+    :return: the evaluated exponent
+    """
+    if exp == 0:
+        return 1
+    elif (exp % 2) == 0:
+        return pow_func(base * base, exp / 2)
+    else:
+        return pow_func(base, exp - 1) * base
+
+
+@memoize
+def try_composite(a, d, n, s):
+    """
+
+    :param a:
+    :param d:
+    :param n:
+    :param s:
+    :return: True if composite
+    """
+    if pow(a, d, n) == 1:
+        return False
+    for i in range(s):
+        if pow(a, 2 ** i * d, n) == n - 1:
+            return False
+    return True  # n  is definitely composite
+
+
+@memoize
+def small_prime_test(n, known_primes):
+    """
+
+    :param n:
+    :param known_primes:
+    :return:
+    """
+
+    if n in known_primes or n in (0, 1):
+        return True
+    if any((n % p) == 0 for p in known_primes):
+        return False
+    d, s = n - 1, 0
+    while not d % 2:
+        d, s = d >> 1, s + 1
+    # Returns exact according to http://primes.utm.edu/prove/prove2_3.html
+    if n < 1373653:
+        return not any(try_composite(a, d, n, s) for a in (2, 3))
+    if n < 25326001:
+        return not any(try_composite(a, d, n, s) for a in (2, 3, 5))
+    if n < 118670087467:
+        if n == 3215031751:
+            return False
+        return not any(try_composite(a, d, n, s) for a in (2, 3, 5, 7))
+    if n < 2152302898747:
+        return not any(try_composite(a, d, n, s) for a in (2, 3, 5, 7, 11))
+    if n < 3474749660383:
+        return not any(try_composite(a, d, n, s) for a in (2, 3, 5, 7, 11, 13))
+    if n < 341550071728321:
+        return not any(try_composite(a, d, n, s) for a in (2, 3, 5, 7, 11, 13, 17))
+
+
+def large_prime_test(n, known_primes, precision_for_huge_n=16):
+    if n in known_primes or n in (0, 1):
+        return True
+    if any((n % p) == 0 for p in known_primes):
+        return False
+    d, s = n - 1, 0
+    while not d % 2:
+        d, s = d >> 1, s + 1
+
+    return not any(try_composite(a, d, n, s)
+                   for a in known_primes[:precision_for_huge_n])
+
+
+def is_prime(n, precision_for_huge_n=16):
+    known_primes = [2, 3]
+    known_primes += [x for x in range(5, 1000, 2) if small_prime_test(x, known_primes)]
+
+    if n < 341550071728321:
+        return small_prime_test(n, known_primes)
+    else:
+        return large_prime_test(n, known_primes, precision_for_huge_n)
