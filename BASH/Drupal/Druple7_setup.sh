@@ -39,6 +39,8 @@ echo "deb http://download.webmin.com/download/repository sarge contrib" >> /etc/
 wget http://www.webmin.com/jcameron-key.asc
 sudo apt-key add jcameron-key.asc
 
+sudo add-apt-repository ppa:ondrej/php -y
+
 
 apt-get update -q
 apt-get upgrade -y -q
@@ -135,8 +137,7 @@ apt-get install -q -y -o Dpkg::Options::="--force-confdef" \
 
 ##### PHP #####
 echo "[+] Installing PHP..."
-apt-get install php php-pear libapache2-mod-php php-cli php-mcrypt php-mysql -y -q
-
+apt-get install php php-pear libapache2-mod-php php-cli php-mcrypt php-mysql php-uploadprogress php7.0-zip -y -q
 
 ##### PHPMyAdmin #####
 echo "[+] Installing PHPMyAdmin..."
