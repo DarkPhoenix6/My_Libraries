@@ -311,6 +311,10 @@ $IPTABLES -A INPUT -p tcp --dport 110 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A INPUT -p tcp --dport 995 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
 
+# NoMachine
+$IPTABLES -A INPUT -p tcp --dport 4000 -m conntrack --ctstate NEW -j ACCEPT
+$IPTABLES -A INPUT -p udp --dport 4000 -m conntrack --ctstate NEW -j ACCEPT
+
 ### Default INPUT LOG rule ###
 $IPTABLES -A INPUT ! -i lo -j LOG_DROP
 
@@ -346,6 +350,10 @@ $IPTABLES -A OUTPUT -p udp --dport 123 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p tcp --sport 123 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p udp --sport 123 -m conntrack --ctstate NEW -j ACCEPT
 $IPTABLES -A OUTPUT -p udp --dport 10000 -m conntrack --ctstate NEW -j ACCEPT
+
+# NoMachine
+$IPTABLES -A OUTPUT -p tcp --dport 4000 -m conntrack --ctstate NEW -j ACCEPT
+$IPTABLES -A OUTPUT -p udp --dport 4000 -m conntrack --ctstate NEW -j ACCEPT
 
 # SMTP and SMTPS #
 $IPTABLES -A OUTPUT -p tcp --dport 25 -m conntrack --ctstate NEW -j ACCEPT
@@ -388,8 +396,6 @@ echo "[+] Configuring Persistent Firewall..."
 apt-get -q -y -o Dpkg::Options::="--force-confdef" \
 -o Dpkg::Options::="--force-confold" install iptables-persistent
 }
-
-
 
 
 #####Main
