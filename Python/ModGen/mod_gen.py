@@ -25,7 +25,7 @@ def corrected_mod_gen(b, m, s=0, n=1):
     :return: Yields the next tuple in the set
     """
     for i in range(n):
-        yield(tuple([(i + k + s) % n for k in range(m)]))
+        yield(tuple([(i + k + s) % b for k in range(m)]))
 
 
 def list_mod_gen(iterable, m, s=0):
