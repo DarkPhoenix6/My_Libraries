@@ -21,7 +21,7 @@ def corrected_mod_gen(b, m, s=0, n=1):
     :param b: The bounds of the indices in the tuple
     :param m: The number of indices per tuple
     :param s: The starting index, defaults to 0
-    :param b: The number of tuples to generate
+    :param n: The number of tuples to generate
     :return: Yields the next tuple in the set
     """
     for i in range(n):
