@@ -1,0 +1,2 @@
+C:\Users\Chris\AppData\Local\Programs\Python\Python36\python.exe C:\Users\Chris\AppData\Roaming\Python\Python36\Scripts\cython.exe --embed C:\Users\Chris\PycharmProjects\My_Libraries\Python\cythonTest\sampleSetup.py --cplus -o test6.cpp
+g++ C:\Users\Chris\PycharmProjects\My_Libraries\Python\cythonTest\test6.cpp -I C:\Users\Chris\AppData\Local\Programs\Python\Python36\include -L C:\Users\Chris\AppData\Local\Programs\Python\Python36\libs -l python36 -o C:\Users\Chris\PycharmProjects\My_Libraries\Python\cythonTest\test.exe -fPIC -D MS_WIN64 -v

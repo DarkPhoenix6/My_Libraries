@@ -814,3 +814,51 @@ def is_prime(n, precision_for_huge_n=16):
         return small_prime_test(n, known_primes)
     else:
         return large_prime_test(n, known_primes, precision_for_huge_n)
+
+
+def cmp_to_key(mycmp):
+    """
+    Convert a cmp= function into a key= function
+    :param mycmp:
+    :return:
+    """
+    class K:
+        def __init__(self, obj, *args):
+            self.obj = obj
+
+        def __lt__(self, other):
+            return mycmp(self.obj, other.obj) < 0
+
+        def __gt__(self, other):
+            return mycmp(self.obj, other.obj) > 0
+
+        def __eq__(self, other):
+            return mycmp(self.obj, other.obj) == 0
+
+        def __le__(self, other):
+            return mycmp(self.obj, other.obj) <= 0
+
+        def __ge__(self, other):
+            return mycmp(self.obj, other.obj) >= 0
+
+        def __ne__(self, other):
+            return mycmp(self.obj, other.obj) != 0
+    return K
+
+
+def numeric_compare(x, y):
+    return x - y
+
+
+def reverse_numeric(x, y):
+    return y - x
+
+
+def get_alphabet():
+    return 'abcdefghijklmnopqrstuvwxyz'
+
+
+def get_alphabet_list():
+    a = 'abcdefghijklmnopqrstuvwxyz'
+    return [i for i in a]
+
