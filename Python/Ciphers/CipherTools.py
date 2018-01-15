@@ -39,3 +39,10 @@ def count_letters(in_str: str) -> dict:
 
 def find_symbol(alphabet, j):
     return alphabet.find(j.upper())
+
+
+def is_empty(test_structure):
+    if test_structure:
+        return False
+    else:
+        return True

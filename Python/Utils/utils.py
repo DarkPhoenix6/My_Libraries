@@ -862,3 +862,9 @@ def get_alphabet_list():
     a = 'abcdefghijklmnopqrstuvwxyz'
     return [i for i in a]
 
+
+def is_empty(test_structure):
+    if test_structure:
+        return False
+    else:
+        return True

@@ -14,6 +14,7 @@ from builtins import map
 from builtins import input
 # etc., as needed
 from Ciphers.CipherTools import *
+from Ciphers.DetectEnglish import DetectEnglish
 from future import standard_library
 
 standard_library.install_aliases()
@@ -60,3 +61,7 @@ class VigenereCipher(object):
     @staticmethod
     def find_symbol(alphabet, j):
         return alphabet.find(j.upper())
+
+
+class CrackVigenere(VigenereCipher):
+
