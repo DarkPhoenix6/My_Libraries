@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-
 from builtins import open
 from builtins import str
 from builtins import range
@@ -14,28 +13,9 @@ from builtins import dict
 from builtins import map
 from builtins import input
 # etc., as needed
-
+from Ciphers.CipherTools import *
 from future import standard_library
 standard_library.install_aliases()
-
-
-def get_alphabet() -> str:
-    return 'abcdefghijklmnopqrstuvwxyz'
-
-
-def get_alphabet_list() -> list:
-    return [i for i in get_alphabet()]
-
-
-def get_alphabet_dict() -> dict:
-    a = {}
-    for i in get_alphabet():
-        a[i] = 0
-    return a
-
-
-def enum_alphabet():
-    return [i for i in enumerate(get_alphabet_list())]
 
 
 def decrypt_shift(in_str: str):
@@ -46,30 +26,14 @@ def decrypt_shift(in_str: str):
         print(c)
 
 
-def split_string(in_str):
-    b = in_str.replace(",", " ")
-    e = b.replace(".", " ")
-    a = e.split(" ")
-    return a
-
-
 def caesar_cipher(in_str, shift_amount):
     d = get_alphabet()
     c = str(shift_amount) + ": "
     for h in in_str:
         for j in h:
-            c += d[(d.find(j) + shift_amount) % 26]
+            c += d[(d.find(j.lower()) + shift_amount) % 26]
         c += " "
     return c
-
-
-def count_letters(in_str: str) -> dict:
-    a = get_alphabet_dict()
-    for i in in_str:
-        for j in i:
-            if j in a.keys():
-                a[j] += 1
-    return a
 
 
 a = enum_alphabet()
