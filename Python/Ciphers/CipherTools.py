@@ -17,6 +17,13 @@ def get_alphabet_dict() -> dict:
     return a
 
 
+def get_alphabet_upper_dict() -> dict():
+    a = {}
+    for i in get_alphabet_upper():
+        a[i] = 0
+    return a
+
+
 def enum_alphabet():
     return [i for i in enumerate(get_alphabet_list())]
 
