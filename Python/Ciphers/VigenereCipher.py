@@ -71,6 +71,7 @@ class VigenereCipher(object):
 class CrackVigenere(FrequencyAnalysis):
     def __init__(self, silent_mode=False, number_most_freq_letters=4, max_key_length=16):
         FrequencyAnalysis.__init__(self)
+        self.detect_english = DetectEnglish()
         self.silent_mode = silent_mode
         self.number_most_freq_letters = number_most_freq_letters
         self.max_key_length = max_key_length
@@ -96,7 +97,8 @@ class CrackVigenere(FrequencyAnalysis):
                         sequence_spacings[sequence].append(i - seq_start)
         return sequence_spacings
 
-    def get_useful_factor(self, number):
+    @memoize
+    def get_useful_factors(self, number):
         if number < 2:
             # no useful factors
             return []
@@ -112,6 +114,108 @@ class CrackVigenere(FrequencyAnalysis):
             return list(set(factors))
 
     def get_most_common_factors(self, sequence_factors):
+        factor_counts = {}
+        for sequence in sequence_factors:
+            factor_list = sequence_factors[sequence]
+            for factor in factor_list:
+                if factor not in factor_counts:
+                    factor_counts[factor] = 0
+                factor_counts[factor] += 1
+
+        factors_by_count = []
+        for factor in factor_counts:
+            if factor <= self.max_key_length:
+                # only factors less than or equal to the max key size
+                factors_by_count.append((factor, factor_counts[factor]))
+
+        factors_by_count.sort(key=CrackVigenere.get_item_at_index_one, reverse=True)
+        return factors_by_count
+
+    def kasiski_examination(self, ciphertext):
+        repeated_sequence_spacings = self.find_repeat_sequences(ciphertext)
+
+        sequence_factors = {}
+        for sequence in repeated_sequence_spacings:
+            sequence_factors[sequence] = []
+            for spacing in repeated_sequence_spacings[sequence]:
+                sequence_factors[sequence].extend(self.get_useful_factors(spacing))
+
+        factors_by_count = self.get_most_common_factors(sequence_factors)
+        likely_key_lengths = []
+        for two_int_tuple in factors_by_count:
+            likely_key_lengths.append(two_int_tuple[0])
+
+        return likely_key_lengths
+
+    def get_nth_subkey_letters(self, n, key_length, message):
+        message = self.non_letters_pattern.sub('', message)
+
+        i = n - 1
+        letters = []
+        while i < len(message):
+            letters.append(message[i])
+            i += key_length
+        return ''.join(letters)
+
+    def attempt_hack_with_key_of_length_n(self, ciphertext, n, encryption_break_dict_orig: dict):
+        """
+
+        :param ciphertext:
+        :param n: most likely key length
+        :param encryption_break_dict_orig:
+        :return:
+        """
+        encryption_break_dict = {}
+        ciphertext_upper = ciphertext.upper()
+        all_frequency_scores = []
+        for nth in range(1, n + 1):
+            nth_letters = self.get_nth_subkey_letters(nth, n, ciphertext_upper)
+            frequency_scores = []
+            for poss_key in self.letters:
+                decrypted_text = VigenereCipher.decrypt(nth_letters, poss_key)
+                key_and_frequency_match_tuple = (poss_key, self.english_frequency_match_score(decrypted_text))
+                frequency_scores.append(key_and_frequency_match_tuple)
+
+            frequency_scores.sort(key=self.get_item_at_index_one, reverse=True)
+
+            all_frequency_scores.append(frequency_scores[:self.number_most_freq_letters])
+
+        for indexes in itertools.product(range(self.number_most_freq_letters), repeat=n):
+            poss_key = ''
+            for i in range(n):
+                poss_key += all_frequency_scores[i][indexes[i]][0]
+
+            decrypted_text = VigenereCipher.decrypt(ciphertext_upper, poss_key)
+
+            if self.detect_english.is_english(decrypted_text):
+                original_case = []
+                for i in range(len(ciphertext)):
+                    if ciphertext[i].isupper():
+                        original_case.append(decrypted_text[i].upper())
+                    else:
+                        original_case.append(decrypted_text[i].lower())
+
+                decrypted_text = ''.join(original_case)
+                CrackVigenere.add_to_enc_break_dict(encryption_break_dict, poss_key, decrypted_text, 200)
+        return dict(encryption_break_dict, **encryption_break_dict_orig)
+
+    def hack_vigenere(self, ciphertext):
+        """
+
+        :param ciphertext:
+        :return:
+        """
+        encryption_break_dict = {}
+        all_likely_key_lengths = self.kasiski_examination(ciphertext)
+
+        for key_length in all_likely_key_lengths:
+            encryption_break_dict = self.attempt_hack_with_key_of_length_n(ciphertext, key_length, encryption_break_dict)
+
+        print(encryption_break_dict)
+
+        if is_empty(encryption_break_dict):
+            print('Unable to hack message with likely key length(s). Brute forcing key length...')
+
 
     @staticmethod
     def dictionary_attack(cipher_text):
@@ -124,8 +228,8 @@ class CrackVigenere(FrequencyAnalysis):
         return encryption_break_dict
 
     @staticmethod
-    def add_to_enc_break_dict(break_dict, key, dec_message):
-        break_dict[key] = dec_message[:100]
+    def add_to_enc_break_dict(break_dict, key, dec_message, message_len_to_show=100):
+        break_dict[key] = dec_message[:message_len_to_show]
 
 
 m = 'tkg kcl sgzgj gzgs hggs pn lncsgt bvyy fspvy cqpgj kgj qcpkgj csl bnpkgj lvgl, pknfuk tvw nj gvukp pvbgt c ' \
@@ -155,5 +259,8 @@ m = 'tkg kcl sgzgj gzgs hggs pn lncsgt bvyy fspvy cqpgj kgj qcpkgj csl bnpkgj lv
     'yvtpgl ns antpnqqvig lgacjpbgsp csscyt onfyl snp sno gzgs hg jgbgbhgjgl he pkg knnmonjbjvllgs kgvjtcp-ycjug ' \
     'okn afyygl pkg hfvylvsut lnos csl hfjvgl pkgb vs innmtpnzgt csl ovspgj ujcpgt. '
 
-crack_dict = CrackVigenere.dictionary_attack(m)
-print(crack_dict)
+# crack_dict = CrackVigenere.dictionary_attack(m)
+# print(crack_dict)
+
+crack_ven = CrackVigenere()
+crack_ven.hack_vigenere(m)

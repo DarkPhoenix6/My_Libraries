@@ -39,6 +39,10 @@ class FrequencyAnalysis(object):
     def get_item_at_index_zero(x):
         return x[0]
 
+    @staticmethod
+    def get_item_at_index_one(x):
+        return x[1]
+
     def get_frequency_order(self, message):
         """
 
@@ -59,7 +63,7 @@ class FrequencyAnalysis(object):
             frequency_to_letters[frequency] = ''.join(frequency_to_letters[frequency])
 
         frequency_pairs = list(frequency_to_letters.items())
-        frequency_pairs.sort(key=self.get_item_at_index_zero, reverse=True)
+        frequency_pairs.sort(key=FrequencyAnalysis.get_item_at_index_zero, reverse=True)
 
         frequency_order = []
         for frequency_pair in frequency_pairs:
