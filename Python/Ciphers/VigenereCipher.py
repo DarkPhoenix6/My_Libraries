@@ -15,9 +15,12 @@ from builtins import input
 # etc., as needed
 from Ciphers.CipherTools import *
 from Ciphers.DetectEnglish import DetectEnglish
+from Ciphers.FrequencyAnalysis import FrequencyAnalysis
 from future import standard_library
 
 standard_library.install_aliases()
+import itertools
+import re
 
 
 class VigenereCipher(object):
@@ -34,7 +37,7 @@ class VigenereCipher(object):
     def translate_message(message: str, key: str, mode: str):
         alphabet = get_alphabet_upper()
         translated = []
-        i = 0   # key Index
+        i = 0  # key Index
         key = key.upper()
         len1 = len(alphabet)
         key_len = len(key)
@@ -42,9 +45,9 @@ class VigenereCipher(object):
             num = VigenereCipher.find_symbol(alphabet, j)
             if num != -1:  # -1 means j.upper() was not found in alphabet
                 if mode == 'encrypt':
-                    num += alphabet.find(key[i])    # add if encrypting
+                    num += alphabet.find(key[i])  # add if encrypting
                 elif mode == 'decrypt':
-                    num -= alphabet.find(key[i])    # subtract if decrypting
+                    num -= alphabet.find(key[i])  # subtract if decrypting
 
                 num %= len1  # handle the potential wrap-around
 
@@ -65,7 +68,51 @@ class VigenereCipher(object):
         return alphabet.find(j.upper())
 
 
-class CrackVigenere(object):
+class CrackVigenere(FrequencyAnalysis):
+    def __init__(self, silent_mode=False, number_most_freq_letters=4, max_key_length=16):
+        FrequencyAnalysis.__init__(self)
+        self.silent_mode = silent_mode
+        self.number_most_freq_letters = number_most_freq_letters
+        self.max_key_length = max_key_length
+        self.non_letters_pattern = re.compile('[^A-Z]')
+
+    def find_repeat_sequences(self, message):
+        message = self.non_letters_pattern.sub('', message.upper())
+
+        sequence_spacings = {}
+        # iterate through looking for patterns with length from 3 to 5
+        for seq_len in range(3, 6):
+            for seq_start in range(len(message) - seq_len):
+                sequence = message[seq_start:seq_start + seq_len]
+
+                # look for pattern in rest of message
+                for i in range(seq_start + seq_len, len(message) - seq_len):
+                    if message[i:i + seq_len] == sequence:
+                        if sequence not in sequence_spacings:
+                            sequence_spacings[sequence] = []
+
+                        # Append the spacing distance between the sequence and the repeated sequence
+                        # to the dict entry for that sequence
+                        sequence_spacings[sequence].append(i - seq_start)
+        return sequence_spacings
+
+    def get_useful_factor(self, number):
+        if number < 2:
+            # no useful factors
+            return []
+
+        factors = []
+
+        for i in range(2, self.max_key_length + 1):
+            if (number % i) == 0:
+                factors.append(i)
+                factors.append(int(number / i))
+            if 1 in factors:
+                factors.remove(1)
+            return list(set(factors))
+
+    def get_most_common_factors(self, sequence_factors):
+
     @staticmethod
     def dictionary_attack(cipher_text):
         encryption_break_dict = {}
@@ -80,32 +127,33 @@ class CrackVigenere(object):
     def add_to_enc_break_dict(break_dict, key, dec_message):
         break_dict[key] = dec_message[:100]
 
+
 m = 'tkg kcl sgzgj gzgs hggs pn lncsgt bvyy fspvy cqpgj kgj qcpkgj csl bnpkgj lvgl, pknfuk tvw nj gvukp pvbgt c ' \
-       'egcj tkg ogsp pn pnos ns tcpfjlce, vs pkg ocuns, vs c bcvy-njlgj ljgtt csl kgj hcjg qggp qycp vs pkg ocuns ' \
-       'hgl csl kgj tkngt ojcaagl vs c avgig nq acagj hgtvlg kgj ns pkg tgcp. tkg onfyl afp ns pkg tkngt xftp ' \
-       'hgqnjg pkg ocuns jgcikgl pnos. cqpgj tkg unp pn hg c hvu uvjy tkg onfyl ctm kgj qcpkgj pn tpna pkg ocuns cp ' \
-       'pkg glug nq pnos csl tkg onfyl ugp lnos csl ocym. tkg onfyl snp pgyy kgj qcpkgj oke tkg ocspgl pn ocym vs ' \
-       'vstpgcl nq jvlvsu. kg pknfukp pkcp vp oct hgicftg nq pkg tbnnpk tpjggpt, pkg tvlgocymt. hfp vp oct hg icftg ' \
-       'tkg hgyvgzgl pkcp pkg agnayg okn tco kgj csl oknb tkg acttgl ns qnnp onfyl hgyvgzg pkcp tkg yvzgl vs pkg ' \
-       'pnos pnn. okgs tkg oct pogyzg egcjt nyl kgj qcpkgj csl bnpkgj lvgl vs pkg tcbg tfbbgj, vs c ynu knftg nq ' \
-       'pkjgg jnnbt csl c kcyy, ovpknfp tijggst, vs c jnnb yvukpgl he c hfutovjygl mgjntgsg ycba, pkg scmgl qynnj ' \
-       'onjs tbnnpk ct nyl tvyzgj he scmgl qggp. tkg oct pkg enfsugtp yvzvsu ikvyl. kgj bnpkgj lvgl qvjtp. tkg tcvl, ' \
-       'pcmg icjg nq aco. ygsc lvl tn. pkgs nsg lce kgj qcpkgj tcvl, enf un pn lncsgt bvyy ovpk bimvsyge. enf ugp ' \
-       'jgcle pn un, hg jgcle okgs kg inbgt. pkgs kg lvgl. bimvsyge, pkg hjnpkgj, cjjvzgl vs c ocuns. pkge hfjvgl ' \
-       'pkg qcpkgj vs c ujnzg hgkvsl c infspje ikfjik nsg cqpgjsnns, ovpk c avsg kgcltpnsg. pkg sgwp bnjsvsu tkg ' \
-       'lgacjpgl qnjgzgj, pknfuk vp vt anttvhyg pkcp tkg lvl snp msno pkvt cp pkg pvbg, vs pkg ocuns ovpk bimvsyge, ' \
-       'qnj lncsgt bvyy. pkg ocuns oct hnjjnogl csl pkg hjnpkgj kcl ajnbvtgl pn jgpfjs vp he svukpqcyy. pkg hjnpkgj ' \
-       'onjmgl vs pkg bvyy. cyy pkg bgs vs pkg zvyycug. onjmgl vs pkg bvyy nj qnj vp. vp oct ifppvsu avsg. vp kcl ' \
-       'hggs pkgjg tgzgs egcjt csl vs tgzgs egcjt bnjg vp onfyl lgtpjne cyy pkg pvbhgj ovpkvs vpt jgcik. pkgs tnbg ' \
-       'nq pkg bcikvsgje csl bntp nq pkg bgs okn jcs vp csl gwvtpgl hgicftg nq csl qnj vp onfyl hg ynclgl nspn ' \
-       'qjgvukp icjt csl bnzgl coce. hfp tnbg nq pkg bcikvsgje onfyl hg ygqp, tvsig sgo avgigt infyl cyocet hg ' \
-       'hnfukp ns pkg vstpcyybgsp aycs-ucfsp, tpcjvsu, bnpvnsygtt okggyt jvtvsu qjnb bnfslt nq hjvim jfhhyg csl ' \
-       'jcuugl ogglt ovpk c rfcyvpe ajnqnfslye ctpnsvtkvsu, csl ufppgl hnvygjt yvqpvsu pkgvj jftpvsu csl fstbnmvsu ' \
-       'tpcimt ovpk cs cvj tpfhhnjs, hcqqygl csl hgbftgl fans c tpfbaanimgl tigsg nq ajnqnfsl csl agcigqfy ' \
-       'lgtnycpvns, fsaynogl, fspvyygl, ufppvsu tynoye vspn jgl csl iknmgl jczvsgt hgsgcpk pkg ynsu rfvgp jcvst nq ' \
-       'cfpfbs csl pkg ucyynavsu qfje nq zgjscy grfvsnwgt. pkgs pkg kcbygp okvik cp vpt hgtp lce kcl hnjsg sn scbg ' \
-       'yvtpgl ns antpnqqvig lgacjpbgsp csscyt onfyl snp sno gzgs hg jgbgbhgjgl he pkg knnmonjbjvllgs kgvjtcp-ycjug ' \
-       'okn afyygl pkg hfvylvsut lnos csl hfjvgl pkgb vs innmtpnzgt csl ovspgj ujcpgt. '
+    'egcj tkg ogsp pn pnos ns tcpfjlce, vs pkg ocuns, vs c bcvy-njlgj ljgtt csl kgj hcjg qggp qycp vs pkg ocuns ' \
+    'hgl csl kgj tkngt ojcaagl vs c avgig nq acagj hgtvlg kgj ns pkg tgcp. tkg onfyl afp ns pkg tkngt xftp ' \
+    'hgqnjg pkg ocuns jgcikgl pnos. cqpgj tkg unp pn hg c hvu uvjy tkg onfyl ctm kgj qcpkgj pn tpna pkg ocuns cp ' \
+    'pkg glug nq pnos csl tkg onfyl ugp lnos csl ocym. tkg onfyl snp pgyy kgj qcpkgj oke tkg ocspgl pn ocym vs ' \
+    'vstpgcl nq jvlvsu. kg pknfukp pkcp vp oct hgicftg nq pkg tbnnpk tpjggpt, pkg tvlgocymt. hfp vp oct hg icftg ' \
+    'tkg hgyvgzgl pkcp pkg agnayg okn tco kgj csl oknb tkg acttgl ns qnnp onfyl hgyvgzg pkcp tkg yvzgl vs pkg ' \
+    'pnos pnn. okgs tkg oct pogyzg egcjt nyl kgj qcpkgj csl bnpkgj lvgl vs pkg tcbg tfbbgj, vs c ynu knftg nq ' \
+    'pkjgg jnnbt csl c kcyy, ovpknfp tijggst, vs c jnnb yvukpgl he c hfutovjygl mgjntgsg ycba, pkg scmgl qynnj ' \
+    'onjs tbnnpk ct nyl tvyzgj he scmgl qggp. tkg oct pkg enfsugtp yvzvsu ikvyl. kgj bnpkgj lvgl qvjtp. tkg tcvl, ' \
+    'pcmg icjg nq aco. ygsc lvl tn. pkgs nsg lce kgj qcpkgj tcvl, enf un pn lncsgt bvyy ovpk bimvsyge. enf ugp ' \
+    'jgcle pn un, hg jgcle okgs kg inbgt. pkgs kg lvgl. bimvsyge, pkg hjnpkgj, cjjvzgl vs c ocuns. pkge hfjvgl ' \
+    'pkg qcpkgj vs c ujnzg hgkvsl c infspje ikfjik nsg cqpgjsnns, ovpk c avsg kgcltpnsg. pkg sgwp bnjsvsu tkg ' \
+    'lgacjpgl qnjgzgj, pknfuk vp vt anttvhyg pkcp tkg lvl snp msno pkvt cp pkg pvbg, vs pkg ocuns ovpk bimvsyge, ' \
+    'qnj lncsgt bvyy. pkg ocuns oct hnjjnogl csl pkg hjnpkgj kcl ajnbvtgl pn jgpfjs vp he svukpqcyy. pkg hjnpkgj ' \
+    'onjmgl vs pkg bvyy. cyy pkg bgs vs pkg zvyycug. onjmgl vs pkg bvyy nj qnj vp. vp oct ifppvsu avsg. vp kcl ' \
+    'hggs pkgjg tgzgs egcjt csl vs tgzgs egcjt bnjg vp onfyl lgtpjne cyy pkg pvbhgj ovpkvs vpt jgcik. pkgs tnbg ' \
+    'nq pkg bcikvsgje csl bntp nq pkg bgs okn jcs vp csl gwvtpgl hgicftg nq csl qnj vp onfyl hg ynclgl nspn ' \
+    'qjgvukp icjt csl bnzgl coce. hfp tnbg nq pkg bcikvsgje onfyl hg ygqp, tvsig sgo avgigt infyl cyocet hg ' \
+    'hnfukp ns pkg vstpcyybgsp aycs-ucfsp, tpcjvsu, bnpvnsygtt okggyt jvtvsu qjnb bnfslt nq hjvim jfhhyg csl ' \
+    'jcuugl ogglt ovpk c rfcyvpe ajnqnfslye ctpnsvtkvsu, csl ufppgl hnvygjt yvqpvsu pkgvj jftpvsu csl fstbnmvsu ' \
+    'tpcimt ovpk cs cvj tpfhhnjs, hcqqygl csl hgbftgl fans c tpfbaanimgl tigsg nq ajnqnfsl csl agcigqfy ' \
+    'lgtnycpvns, fsaynogl, fspvyygl, ufppvsu tynoye vspn jgl csl iknmgl jczvsgt hgsgcpk pkg ynsu rfvgp jcvst nq ' \
+    'cfpfbs csl pkg ucyynavsu qfje nq zgjscy grfvsnwgt. pkgs pkg kcbygp okvik cp vpt hgtp lce kcl hnjsg sn scbg ' \
+    'yvtpgl ns antpnqqvig lgacjpbgsp csscyt onfyl snp sno gzgs hg jgbgbhgjgl he pkg knnmonjbjvllgs kgvjtcp-ycjug ' \
+    'okn afyygl pkg hfvylvsut lnos csl hfjvgl pkgb vs innmtpnzgt csl ovspgj ujcpgt. '
 
 crack_dict = CrackVigenere.dictionary_attack(m)
 print(crack_dict)

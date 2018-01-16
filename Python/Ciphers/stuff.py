@@ -72,20 +72,13 @@ in_2 = 'tkg kcl sgzgj gzgs hggs pn lncsgt bvyy fspvy cqpgj kgj qcpkgj csl bnpkgj
        'yvtpgl ns antpnqqvig lgacjpbgsp csscyt onfyl snp sno gzgs hg jgbgbhgjgl he pkg knnmonjbjvllgs kgvjtcp-ycjug ' \
        'okn afyygl pkg hfvylvsut lnos csl hfjvgl pkgb vs innmtpnzgt csl ovspgj ujcpgt. '
 
+
 for i in a:
     print(i)
 
 d = get_alphabet()
 b = "tq esle hld ecfp"
 decrypt_shift(in_1)
-# k = b.split(" ")
-# for i in range(26):
-#     c = ''
-#     for h in k:
-#         for j in h:
-#             c += d[(d.find(j) + i) % 26]
-#         c += " "
-#     print(c)
 
 in_1_dec = caesar_cipher(split_string(in_1), 15)
 print(in_1_dec)
