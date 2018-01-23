@@ -82,3 +82,7 @@ def memoize(fn):
     foo.past_calls = {}
     foo.__name__ = 'memoized_' + fn.__name__
     return foo
+
+
+def add_to_enc_break_dict(break_dict, key, dec_message, message_len_to_show=100):
+    break_dict[key] = dec_message[:message_len_to_show]

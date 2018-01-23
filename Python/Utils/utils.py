@@ -1,4 +1,7 @@
-from __future__ import division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 from bitstring import BitArray
 from MultiMethod.multimethod import multimethod
 from copy import deepcopy
@@ -43,6 +46,22 @@ def int32_to_uint32(i):
 
 def int32_to_uint322(i: int):
     return ctypes.c_uint32(i).value
+
+
+def bytes_to_int_big(data):
+    return int.from_bytes(data, byteorder='big')
+
+
+def bytes_to_int_little(data):
+    return int.from_bytes(data, byteorder='little')
+
+
+def bytes_to_int(data):
+    return int.from_bytes(data, byteorder=sys.byteorder)
+
+
+def tuple_of_bytes(b: bytes):
+    return tuple(bytes([i]) for i in b)
 
 
 def mod_gen(n, m, s=0):
@@ -132,6 +151,12 @@ def xor_(var: bytes, key: bytes):
     return int_enc.to_bytes(len(var), sys.byteorder)
 
 
+def xor_bytes(x, y):
+    z = []
+    for i in range(len(x)):
+        z.append(x[i] ^ y[i])
+    return bytes(z)
+
 def flip_bit(number, n):
     mask = (0b1 << n - 1)
     result = number ^ mask
@@ -192,7 +217,7 @@ def gf_sub(a, b):
     return gf_add(a, b)
 
 
-def gf_modular_mul(a, b, mod=0x1B):
+def gf_modular_mul(a, b, mod=0x11B):
     """
     Galois Field (256) Multiplication of two Bytes
     :param a:
@@ -200,11 +225,11 @@ def gf_modular_mul(a, b, mod=0x1B):
     :param mod: x^8 + x^4 + x^3 + x + 1 for AES
     :return:
     """
-    p = bytes(hex(0x00))
+    p = 0
     for i in range(8):
         if (b & 1) != 0:
             p ^= a
-        high_bit_set = bytes(a & 0x80)
+        high_bit_set = a & 0x80
         a <<= 1
         if high_bit_set != 0:
             a ^= mod
@@ -309,7 +334,24 @@ def gen_subbytes_table2():
         # For bit scrambling for the encryption SBox entries:
         a = affine_transformation(a, c)
         subBytesTable.append(int(a))
-    return subBytesTable
+    return tuple(subBytesTable)
+
+
+def gen_subbytes_table_bytes():
+    return bytes(gen_subbytes_table2())
+
+
+
+
+def gen_subbytes_inv_table2():
+    subBytesTable_inv = []
+    c = 0b00000101
+    for i in range(0, 256):
+        a = gf_invert(i) if i != 0 else 0
+        # For bit scrambling for the encryption SBox entries:
+        a = affine_transformation(a, c)
+        subBytesTable_inv.append(int(a))
+    return tuple(subBytesTable_inv)
 
 
 def affine_transformation(a, c=0b01100011):
@@ -320,7 +362,7 @@ def affine_transformation(a, c=0b01100011):
 
 def rot_r(n, rotations=1, width=1):
     """Return a given number of bitwise right rotations of an integer n,
-       for a given bit field width.
+       for a given byte field width.
     """
     rotations %= width * 8  #  width bytes give 8*bytes bits
     if rotations < 1:
@@ -543,7 +585,6 @@ def num_of_terms_in_arithmetic_sequence(a, d, number):
 
 
 def sum_arithmetic_series(a, n, d):
-
     return (n / 2) * (2 * a + (n - 1) * d)
 
 
@@ -570,16 +611,17 @@ def lcm(a, b):
 
     while True:
         if greater % a == 0 and greater % b == 0:
-            lcm = greater
+            lcm_ = greater
             break
         greater += 1
 
-    return lcm
+    return lcm_
 
 
 def get_lcm_for(your_list):
     return reduce(lambda x, y: lcm(x, y), your_list)
-reduce()
+# reduce()
+
 
 def find_divisor(num):
     # 2,3 are the most common divisor for many numbers hence I go by divisor of 2,3
@@ -592,7 +634,7 @@ def find_divisor(num):
 
 
 def find__l_c_m(lcm_array):
-    lcm = 1
+    lcm_ = 1
     while len(lcm_array) > 0:
         min_of_l_c_m_array = min(lcm_array)
         divisor = find_divisor(min_of_l_c_m_array)
@@ -603,11 +645,11 @@ def find__l_c_m(lcm_array):
             if remainder == 0:
                 lcm_array[x] = quotient
 
-        lcm *= divisor
+        lcm_ *= divisor
         min_of_l_c_m_array = min(lcm_array)
         if min_of_l_c_m_array == 1:
             lcm_array.remove(min_of_l_c_m_array)
-    return lcm
+    return lcm_
 
 
 def round_to_tenths(a) -> float:
