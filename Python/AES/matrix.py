@@ -17,7 +17,7 @@ import math
 from .gen_key_schedule import get_round_keys
 from BitVector import *
 
-AES_modulus = bytes(hex(0b100011011))
+# AES_modulus = bytes(hex(0b100011011))
 MISSING = object()
 
 
@@ -29,10 +29,10 @@ class Matrix(object):
             self.columns = self.rows
         elif rows == MISSING:
             self.columns = int(columns)
-            self.rows = int(len(matrix_list)/self.columns)
+            self.rows = int(len(matrix_list) / self.columns)
         elif columns == MISSING:
             self.rows = int(rows)
-            self.rows = int(len(matrix_list)/self.columns)
+            self.rows = int(len(matrix_list) / self.columns)
 
         self.state = Matrix.generate_matrix(matrix_list, self.rows, self.columns)  # self.state[row][column]
 
@@ -48,8 +48,7 @@ class Matrix(object):
                 count += 1
         return m
 
-    #def reverse_column(self, column):
-
+    # def reverse_column(self, column):
 
     @staticmethod
     def transpose(matrix):
@@ -84,15 +83,18 @@ class Matrix(object):
             b >>= 1
         return p
 
-    def rotate_matrix_left(self):
-
-
+    # def rotate_matrix_left(self):
 
 
 MIX_COLUMNS_ARRAY = Matrix([0x02, 0x01, 0x01, 0x03,
                             0x03, 0x02, 0x01, 0x01,
                             0x01, 0x03, 0x02, 0x01,
                             0x01, 0x01, 0x03, 0x02])
+
+INV_MIX_COLUMNS_ARRAY = [0x0E, 0x0B, 0x0D, 0x09,
+                         0x09, 0x0E, 0x0B, 0x0D,
+                         0x0D, 0x09, 0x0E, 0x0B,
+                         0x0B, 0x0D, 0x09, 0x0E]
 
 
 class StateArray(Matrix):
@@ -119,7 +121,10 @@ class StateArray(Matrix):
 
     def shift_rows(self):
         for i in range(4):
-            self.state[i][0-i], self.state[i][1-i], self.state[i][2-i], self.state[i][3-i] = self.state[i][0], self.state[i][1], self.state[i][2], self.state[i][3]
+            self.state[i][0 - i], self.state[i][1 - i], self.state[i][2 - i], self.state[i][3 - i] = self.state[i][0], \
+                                                                                                     self.state[i][1], \
+                                                                                                     self.state[i][2], \
+                                                                                                     self.state[i][3]
 
     @staticmethod
     def mul_column(state, row, column):
@@ -134,7 +139,6 @@ class StateArray(Matrix):
         s5 = StateArray.gf_add(s0, s1)
         s6 = StateArray.gf_add(s5, s2)
         return StateArray.gf_add(s6, s3)
-
 
 
 SUBBYTES = Matrix([0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76, 0xca,
@@ -172,4 +176,3 @@ SUBBYTESINVERSE = Matrix([0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 
                           0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61,
                           0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c,
                           0x7d])
-

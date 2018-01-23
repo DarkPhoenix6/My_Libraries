@@ -10,7 +10,7 @@ def gen_subbytes_table():
         a1, a2, a3, a4 = [a.deep_copy() for x in range(4)]
         a ^= (a1 >> 4) ^ (a2 >> 5) ^ (a3 >> 6) ^ (a4 >> 7) ^ c
         subBytesTable.append(int(a))
-    return subBytesTable
+    return tuple(subBytesTable)
 
 
 def gen_inv_subbytes_table():
@@ -21,4 +21,8 @@ def gen_inv_subbytes_table():
         a1, a2, a3 = [a.deep_copy() for x in range(3)]
         a ^= (a1 >> 2) ^ (a2 >> 5) ^ (a3 >> 7) ^ d
         inv_subBytesTable.append(int(a))
-    return inv_subBytesTable
+    return tuple(inv_subBytesTable)
+
+
+if __name__ == '__main__':
+    b
