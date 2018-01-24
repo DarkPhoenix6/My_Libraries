@@ -22,11 +22,20 @@ standard_library.install_aliases()
 class EnglishDict(object):
 
     @staticmethod
-    def load_dictionary() -> dict:
-        dict_file = open('dictionary.txt')
+    def load_dictionary(eng_dictionary='dictionary.txt') -> dict:
+        dict_file = open(eng_dictionary)
         english_words = {}
         for w in dict_file.read().split('\n'):
             english_words[w] = None
+        dict_file.close()
+        return english_words
+
+    @staticmethod
+    def load_dictionary_list(eng_dictionary='dictionary.txt') -> list:
+        dict_file = open(eng_dictionary)
+        english_words = []
+        for w in dict_file.read().split('\n'):
+            english_words.append(w)
         dict_file.close()
         return english_words
 

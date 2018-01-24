@@ -64,7 +64,7 @@ class Matrix(object):
         return a ^ b
 
     @staticmethod
-    def gf_mul(a, b, mod=0x1B):
+    def gf_mul(a, b, mod=0x11B):
         """
         Galois Field (256) Multiplication of two Bytes
         :param a:
@@ -72,11 +72,11 @@ class Matrix(object):
         :param mod: x^8 + x^4 + x^3 + x + 1 for AES
         :return:
         """
-        p = bytes(hex(0x00))
+        p = 0
         for i in range(8):
             if (b & 1) != 0:
                 p ^= a
-            high_bit_set = bytes(a & 0x80)
+            high_bit_set = a & 0x80
             a <<= 1
             if high_bit_set != 0:
                 a ^= mod

@@ -77,7 +77,7 @@ def memoize(fn):
         items_cache = make_tuple(sorted(kwargs.items()))
         args_cache = make_tuple(args)
         if (args_cache, items_cache) not in foo.past_calls:
-            foo.past_calls[(args_cache, items_cache)] = fn(*args,**kwargs)
+            foo.past_calls[(args_cache, items_cache)] = fn(*args, **kwargs)
         return foo.past_calls[(args_cache, items_cache)]
     foo.past_calls = {}
     foo.__name__ = 'memoized_' + fn.__name__
