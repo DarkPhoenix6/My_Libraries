@@ -10,6 +10,10 @@ def get_alphabet_list() -> list:
     return [i for i in get_alphabet()]
 
 
+def get_alphabet_upper_list() -> list:
+    return [i for i in get_alphabet_upper()]
+
+
 def get_alphabet_dict() -> dict:
     a = {}
     for i in get_alphabet():
