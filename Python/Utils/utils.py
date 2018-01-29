@@ -910,3 +910,54 @@ def is_empty(test_structure):
         return False
     else:
         return True
+
+
+def lcs(x, y, mode='length'):
+    """
+    Longest Common Subsequence
+    :param x:
+    :param y:
+    :param mode: choose 'length' to return the length choose 'subsequence' to return the subsequence
+    :return: the length of the longest common subsequence or the subsequence
+    """
+    # find the length of the strings
+    m = len(x)
+    n = len(y)
+
+    # declaring the array for storing the dp values
+    l = [[None] * (n + 1) for i in range(m + 1)]
+
+    """Following steps build L[m+1][n+1] in bottom up fashion
+    Note: L[i][j] contains length of LCS of X[0..i-1]
+    and Y[0..j-1]"""
+    for i in range(m + 1):
+        for j in range(n + 1):
+            if i == 0 or j == 0:
+                l[i][j] = 0
+            elif x[i - 1] == y[j - 1]:
+                l[i][j] = l[i - 1][j - 1] + 1
+            else:
+                l[i][j] = max(l[i - 1][j], l[i][j - 1])
+
+    # L[m][n] contains the length of LCS of X[0..n-1] & Y[0..m-1]
+    if mode == 'length':
+        return l[m][n]
+    elif mode == 'subsequence':
+        index = l[m][n]
+        lcs_ = [''] * (index + 1)
+        lcs_[index] = "\0"
+        i, j = m, n
+        while i > 0 and j > 0:
+            if x[i-1] == y[j-1]:
+                lcs_[index-1] = x[i-1]
+                i -= 1
+                j -= 1
+                index -= 1
+            elif l[i-1][j] > l[i][j-1]:
+                i -= 1
+            else:
+                j -= 1
+
+        return ''.join(lcs_[:len(lcs_)-1])
+    else:
+        pass
