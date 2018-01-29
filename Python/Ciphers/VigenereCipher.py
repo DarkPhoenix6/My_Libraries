@@ -21,6 +21,7 @@ from future import standard_library
 standard_library.install_aliases()
 import itertools
 import re
+import pprint
 
 
 class VigenereCipher(object):
@@ -111,7 +112,7 @@ class CrackVigenere(FrequencyAnalysis):
                 factors.append(int(number / i))
             if 1 in factors:
                 factors.remove(1)
-            return list(set(factors))
+        return list(set(factors))
 
     def get_most_common_factors(self, sequence_factors):
         factor_counts = {}
@@ -127,7 +128,7 @@ class CrackVigenere(FrequencyAnalysis):
             if factor <= self.max_key_length:
                 # only factors less than or equal to the max key size
                 factors_by_count.append((factor, factor_counts[factor]))
-
+        print(pprint.pformat(factors_by_count))
         factors_by_count.sort(key=CrackVigenere.get_item_at_index_one, reverse=True)
         return factors_by_count
 
@@ -273,9 +274,13 @@ if __name__ == '__main__':
 
     # crack_dict = CrackVigenere.dictionary_attack(m)
     # print(crack_dict)
-    import pprint
 
+
+    r = "upk swgeaoemnflmfacfzkhwtfbuswctwlctgdsgolzxqyumjczgnjrfatpaohvugtogmnftkgbzimhpgyuiteqthqtupkswgepumlooozimvjazptciqrfpkdtonjkeitptjtmzpnrjuktbuomyumvtiteegmskeluxvzimvpziiwlupkgixnpuvaktpgeqthpotmefagolvfmxjvmjvzimcjvjpeyimrfbnjuyftljvzizuvonupklqzdpkobxbanjvzimlmwuswrevkxavsqtuknjvgjvgczkbslswtukaqanbvmjvmgzunbnfqxiwulanfekobjpetupkiirmegziteazpwjjvzimjpwxuwzimvbzrpzzimxfegtitbvzjyafxanxusogoqtupkdwxomxbbkmmbjaopvyfbiimgqazvnlfllvztjbasmzpokupkseoupgowrepgolsblkdpkszexwueknjnlpzucmnfkrjuhflzimyuiosagolcbtqflzizuvonupkcmjswunakwmxzbnjvmdwbfzkeeoupgtpgdpomlyswuneoupgtbagnkeluhwtupkxqtewctqrmtupsooouvbgubnfogslkopkxmtubnswahpzimimwyfbyimyuzoqxkejgdszimhflybvjdisficbgcjbnueuhwueeuptkojrbvqfbybvjxmtujgdsjpetupktbgjzyjvzimvbvzsgcfzkupxfmpbzypnnpukditomjuwsbbufanfjrfezimjvazgzunbnftoeagolyucjjmjupknaunmuomhfnusmnjunbltpbzscyumjupkniteqtupkfvjomoupksloepkbvjimcbtqfluvbcjbnupkctgoskuauwmxiqytpuvtjfzgolzimetmzpnlbtuoozimxpijbogjv"
     crack_ven = CrackVigenere()
-    k = crack_ven.english_frequency_match_score(m)
-    pprint.pprint(crack_ven.get_letter_count(m))
-    crack_ven.hack_vigenere(m)
+    k = crack_ven.english_frequency_match_score(r)
+    pprint.pprint(crack_ven.get_letter_count(r))
+    print(crack_ven.kasiski_examination(r))
+    L = crack_ven.attempt_hack_with_key_of_length_n(r,3,{})
+    print(pprint.pformat(L))
+    crack_ven.hack_vigenere(r)

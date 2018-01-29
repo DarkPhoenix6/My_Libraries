@@ -14,9 +14,11 @@ from builtins import map
 from builtins import input
 # etc., as needed
 from Ciphers.CipherTools import *
+from Ciphers import CommonWords
 from future import standard_library
 
 standard_library.install_aliases()
+import copy
 
 
 class EnglishDict(object):
@@ -45,6 +47,13 @@ class DetectEnglish(object):
         self.uppercase_letters = get_alphabet_upper()
         self.alphabet_and_space = self.uppercase_letters + get_alphabet() + " \t\n"
         self.english_dict = EnglishDict.load_dictionary()
+        self.common_words_freq = copy.deepcopy(CommonWords.common_words_freq)
+        self.common_word_count = copy.deepcopy(CommonWords.common_words_freq)
+        self.reset_common_word_count()
+
+    def reset_common_word_count(self):
+        for key in self.common_word_count:
+            self.common_word_count[key] = 0
 
     def get_english_count(self, message: str):
         message = self.remove_non_letters(message.upper())
@@ -74,8 +83,21 @@ class DetectEnglish(object):
         :param letter_percent: the percentage of letters that must be in the alphabet
         :return:
         """
+        if DetectEnglish.has_space(message):
+            return self.is_english_space(letter_percent, message, word_percent)
+        else:
+            return self.is_english_no_space(letter_percent, message, word_percent)
+
+    def is_english_space(self, letter_percent, message, word_percent):
         words_match = self.get_english_count(message) * 100 >= word_percent
         num_letters = len(self.remove_non_letters(message))
         message_letters_percent = float(num_letters) / len(message) * 100
         letters_match = message_letters_percent >= letter_percent
         return words_match and letters_match
+
+    def is_english_no_space(self, letter_percent, message, word_percent):
+        return self.is_english_space(letter_percent, message, word_percent)
+
+    @staticmethod
+    def has_space(message: str):
+        return message.find(" ") != -1

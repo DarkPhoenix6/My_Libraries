@@ -103,6 +103,7 @@ def crack_sub(message):
 
     return remove_solved_letters_from_mapping(intersected_map)
 
+
 def decrypt_with_letter_mapping(ciphertext, letter_mapping):
     key = ['x'] * len(ALPHABET_UPPER)
     for cipher_letter in ALPHABET_UPPER:
