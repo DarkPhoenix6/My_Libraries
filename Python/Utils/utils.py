@@ -341,6 +341,12 @@ def gen_subbytes_table_bytes():
     return bytes(gen_subbytes_table2())
 
 
+def gen_subbytes_table():
+    return gen_subbytes_table2()
+
+
+def gen_subbytes_inv_table():
+    return gen_subbytes_inv_table2()
 
 
 def gen_subbytes_inv_table2():
@@ -352,6 +358,10 @@ def gen_subbytes_inv_table2():
         a = affine_transformation(a, c)
         subBytesTable_inv.append(int(a))
     return tuple(subBytesTable_inv)
+
+
+def gen_subbytes_inv_table_bytes():
+    return bytes(gen_subbytes_inv_table2())
 
 
 def affine_transformation(a, c=0b01100011):

@@ -16,7 +16,6 @@ from builtins import input
 from Ciphers.CipherTools import *
 from Ciphers import CommonWords
 from future import standard_library
-
 standard_library.install_aliases()
 import copy
 

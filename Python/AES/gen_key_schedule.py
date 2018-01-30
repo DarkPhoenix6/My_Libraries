@@ -7,10 +7,29 @@ from Utils.utils import *
 
 # AES_modulus = BitVector(bitstring = '100011011')
 
+byte_sub_table = gen_subbytes_table()
 
-@singledispatch
+
 def get_round_keys(key: bytes):
-    byte_sub_table = gen_subbytes_table()
+    key_words = []
+    len1 = len(key)
+    num_rounds = None
+    if len1 == 16:
+        key_words = gen_key_schedule_128(key, byte_sub_table)
+    if len1 == 24:
+        key_words = gen_key_schedule_192(key, byte_sub_table)
+    if len1 == 32:
+        key_words = gen_key_schedule_256(key, byte_sub_table)
+    key_schedule = []
+    for word_index, word in enumerate(key_words):
+        keyword_in_ints = []
+        for i in range(4):
+            keyword_in_ints.append(word[i])
+        key_schedule.append(keyword_in_ints)
+    return key_schedule
+
+
+def get_round_keys_verbose(key: bytes):
     key_words = []
     len1 = len(key)
     num_rounds = None
@@ -41,16 +60,16 @@ def get_round_keys(key: bytes):
     print("\n\nRound keys in hex (first key for input block):\n")
     for round_key in round_keys:
         print(round_key)
+    return key_schedule
 
-
-def gen_key_schedule_128(key, byte_sub_table):
+def gen_key_schedule_128(key):
     key_words = [None for i in range(44)]
     round_constant = 0x01
     for i in range(4):
         key_words[i] = key[i * 4: i * 4 + 4]
     for i in range(4, 44):
         if i % 4 == 0:
-            kwd, round_constant = gee(key_words[i - 1], byte_sub_table, round_constant)
+            kwd, round_constant = gee(key_words[i - 1], round_constant)
             key_words[i] = xor_bytes(key_words[i - 4], bytes(kwd))
             # print(round_constant)
         else:
@@ -58,33 +77,33 @@ def gen_key_schedule_128(key, byte_sub_table):
     return key_words
 
 
-def gen_key_schedule_192(key, byte_sub_table):
+def gen_key_schedule_192(key):
     key_words = [None for i in range(52)]
     round_constant = 0x01
     for i in range(6):
         key_words[i] = key[i * 4: i * 4 + 4]
     for i in range(6, 52):
         if i % 6 == 0:
-            kwd, round_constant = gee(key_words[i - 1], byte_sub_table, round_constant)
+            kwd, round_constant = gee(key_words[i - 1], round_constant)
             key_words[i] = xor_bytes(key_words[i - 6], bytes(kwd))
         else:
             key_words[i] = xor_bytes(key_words[i - 6], key_words[i - 1])
     return key_words
 
 
-def gen_key_schedule_256(key, byte_sub_table):
+def gen_key_schedule_256(key):
     key_words = [None for i in range(60)]
     round_constant = 0x01
     for i in range(8):
         key_words[i] = key[i * 4: i * 4 + 4]
     for i in range(8, 60):
         if i % 8 == 0:
-            kwd, round_constant = gee(key_words[i - 1], byte_sub_table, round_constant)
+            kwd, round_constant = gee(key_words[i - 1], round_constant)
             key_words[i] = xor_bytes(key_words[i - 8], bytes(kwd))
         elif (i - (i // 8) * 8) < 4:
             key_words[i] = xor_bytes(key_words[i - 8], key_words[i - 1])
         elif (i - (i // 8) * 8) == 4:
-            key_words[i] = 0
+            key_words[i] = []
             for j in range(4):
                 key_words[i].append(byte_sub_table[int(key_words[i - 1][j])])
             key_words[i] = xor_bytes(key_words[i - 8], key_words[i])
@@ -95,7 +114,7 @@ def gen_key_schedule_256(key, byte_sub_table):
     return key_words
 
 
-def gee(word, byte_sub_table, round_constant=0x01):
+def gee(word, round_constant=0x01):
     rotated_word = rot_word(word)
     new_word = [0x00] * 4
     for i in range(4):
