@@ -21,6 +21,7 @@ class MyThread(threading.Thread):
         # Free lock to release next thread
         threadLock.release()
 
+
 threadLock = threading.Lock()
 threads = []
 threadID = 1

@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from bitstring import BitArray
 from MultiMethod.multimethod import multimethod
 from copy import deepcopy
-from .memo import memoize
+from Utils.memo import memoize
 from functools import singledispatch, update_wrapper, reduce, recursive_repr
 import struct
 import ctypes
@@ -971,3 +971,24 @@ def lcs(x, y, mode='length'):
         return ''.join(lcs_[:len(lcs_)-1])
     else:
         pass
+
+
+def factors(x):
+    factors_ = [1, x]
+    for i in range(2, int(math.sqrt(x))):
+        if x % i == 0:
+            factors_.append(i)
+            factors_.append(x//i)
+    factors_.sort()
+    return factors_
+
+
+def intersect_lists(list_a, list_b):
+    set_a = set(list_a)
+    set_b = set(list_b)
+    set_c = set_a.intersection(set_b)
+    return set_c
+
+
+def memory_address(in_var):
+    return hex(id(in_var))
