@@ -179,21 +179,24 @@ def time_it():
     global key3, b, t1, t2
     from time import clock as now
     key2 = 'hello'
-    key2 = set_key(key2, 128)
+    key2 = set_key(key2, 256)
     key3 = bytes(key2, 'ascii')
     b = StateArray([0x01, 0x02, 0x03, 0x04,
                     0x05, 0x06, 0x07, 0x08,
                     0x09, 0x0A, 0x0B, 0x0C,
-                    0x0D, 0x0E, 0x0F, 0x10], rounds=10, key=key3)
+                    0x0D, 0x0E, 0x0F, 0x10], rounds=14, key=key3)
     print(str(b.__dict__()))
     b.print_state()
     # b.AES_encrypt()
     t1 = now()
-    for i in range(1000):
+    for i in range(100000):
+        if i % 1000 == 0:
+            t3 = now()
+            print(i, t3-t1)
         # print('\n' + str(i))
         # b.CF_hash_block_stages()
-        # b.CF_hash()
-        b.AES_encrypt()
+        b.CF_hash()
+        # b.AES_encrypt()
     # b.shift_column_one_down()
     #     b.print_state()
     # # print(b.round_keys[0:4])
