@@ -147,30 +147,3 @@ function getClientIP() {
 function getUserAgent(){
     return getBrowser();
 }
-
-/**
- * @return EmailData
- */
-function checkDB(): EmailData
-{
-    if ($_SESSION['emailDB']) {
-        $mysqli = $_SESSION['emailDB'];
-        $mysqli->connect();
-    } else {
-        $mysqli = new EmailData();
-        $_SESSION['emailDB'] = $mysqli;
-    }
-    return $mysqli;
-}
-
-/**
- * @return array
- */
-function pageStart(): array
-{
-    $displayBlock = '';
-    isAuthenticated();
-    isActiveCheck();
-    $mysqli = checkDB();
-    return array($displayBlock, $mysqli);
-}
