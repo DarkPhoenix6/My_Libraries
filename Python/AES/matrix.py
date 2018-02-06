@@ -119,19 +119,35 @@ class Matrix(object):
     def __setitem__(self, key, value):
         self.state[key] = value
 
-    def __dict__(self):
-        a = {
+    def __to_dict__(self):
+        return {
             'rows': self.rows,
             'columns': self.columns,
             'state': self.state
         }
-        return a
 
     def __str__(self):
-        return str(self.__dict__())
+        q = self.__repr__().split(':')
+        q[0] = type(self).__name__
+        return ''.join(q)
 
     def __repr__(self):
-        return self.__str__()
+        return self.matrix_repr()
+
+    def matrix_repr(self):
+        d = self.__to_dict__()
+        q = self.state_as_one_dimensional_list()
+        # return "%s(%r)" % (type(self).__name__, (str(q) + ', ' + str(d['rows']) + ', ' + str(d['columns'])))
+        return "%s: (%s)" % (self.__class__, (str(q) + ', ' + str(d['rows']) + ', ' + str(d['columns'])))
+
+    def state_as_one_dimensional_list(self):
+        q = []
+        for i in self.state:
+            q += i
+        return q
+
+    def state_as_one_dimensional_tuple(self):
+        return tuple(self.state_as_one_dimensional_list())
 
     def rows_down(self):
         a = self.state.pop(self.rows - 1)
@@ -140,12 +156,17 @@ class Matrix(object):
 
 
 if __name__ == '__main__':
-    pass
-    # a = Matrix([0x01, 0x02, 0x03, 0x04,
-    #             0x05, 0x06, 0x07, 0x08,
-    #             0x09, 0x0A, 0x0B, 0x0C,
-    #             0x0D, 0x0E, 0x0F, 0x10,
-    #             0x11, 0x12, 0x13, 0x14], 5, 4)
+
+    a = Matrix([0x01, 0x02, 0x03, 0x04,
+                0x05, 0x06, 0x07, 0x08,
+                0x09, 0x0A, 0x0B, 0x0C,
+                0x0D, 0x0E, 0x0F, 0x10,
+                0x11, 0x12, 0x13, 0x14], 5, 4)
+    print(a.__dict__)
+    print(a)
+    print(repr(a))
+    b = repr(a)
+    print()
     # a.print_state()
     # a.rows_down()
     # a.print_state()

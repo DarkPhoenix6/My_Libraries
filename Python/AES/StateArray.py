@@ -35,7 +35,14 @@ class StateArray(Matrix):
             self.key = os.urandom(k)
         else:
             self.key = key
+            if len(self.key) == 32:
+                self.rounds = 14
+            elif len(self.key) == 24:
+                self.rounds = 12
+            else:
+                self.rounds = 10
         self.round_keys = get_round_keys(self.key)
+        self.transpose()
 
     def add_round_key(self, round_key, transpose=False):
         for i in range(self.rows):
@@ -49,12 +56,14 @@ class StateArray(Matrix):
 
         self.add_round_key(iv, False)
 
-    def AES_encrypt(self, transpose_round_key=False):
+    def AES_encrypt(self, round_keys_key=MISSING, transpose_round_key=False):
+
         for i in range(0, (self.rounds + 1)):
             t = []
             for j in self.round_keys[i * 4:i * 4 + 4]:
                 t += j
             round_key = Matrix.generate_matrix(t, 4, 4)
+            round_key.transpose()
             if i == 0:
                 self.add_round_key(round_key, transpose_round_key)
                 # self.print_state()
@@ -120,17 +129,6 @@ class StateArray(Matrix):
         self.state[0][1], self.state[1][1], self.state[2][1], self.state[3][1] = self.state[3][1], self.state[0][1], \
                                                                                  self.state[1][1], self.state[2][1],
 
-    def __dict__(self):
-
-        a = {
-            'rows': self.rows,
-            'columns': self.columns,
-            'state': self.state,
-            'rounds': self.rounds,
-            'key': self.key,
-            'round_keys': self.round_keys
-        }
-        return a
 
     def CF_hash(self, transpose_round_key=False, iv=[[222 for x in range(4)] for y in range(4)]):
         for i in range(0, (self.rounds + 1)):
@@ -175,38 +173,49 @@ class StateArray(Matrix):
         self.transpose()
 
 
-def time_it():
-    global key3, b, t1, t2
+def time_it(method_to_run):
+    global key3, b, t1, t2, a, k, p, t3, t4, o
     from time import clock as now
-    key2 = 'hello'
-    key2 = set_key(key2, 256)
-    key3 = bytes(key2, 'ascii')
-    b = StateArray([0x01, 0x02, 0x03, 0x04,
-                    0x05, 0x06, 0x07, 0x08,
-                    0x09, 0x0A, 0x0B, 0x0C,
-                    0x0D, 0x0E, 0x0F, 0x10], rounds=14, key=key3)
-    print(str(b.__dict__()))
-    b.print_state()
+
     # b.AES_encrypt()
     t1 = now()
-    for i in range(100000):
+    t3 = now()
+    t4 = now()
+    k = 32
+    p = 1000000
+    for i in range(p):
         if i % 1000 == 0:
             t3 = now()
-            print(i, t3-t1)
+            print(i, a*i, o*i, t3-t1, t3-t4)
+            t4 = t3
         # print('\n' + str(i))
+        method_to_run()
+        round_keys = get_round_keys(os.urandom(k))
         # b.CF_hash_block_stages()
-        b.CF_hash()
+        # b.CF_hash()
         # b.AES_encrypt()
     # b.shift_column_one_down()
     #     b.print_state()
     # # print(b.round_keys[0:4])
     # print('\n')
     t2 = now()
-    print(str(t2 - t1))
+    print(p, p*a, p*o, str(t2 - t1), t2-t3)
 
 
 if __name__ == '__main__':
-    time_it()
+    global b, key3, a, o
+    key2 = 'hello'
+    key2 = set_key(key2, 256)
+    key3 = bytes(key2, 'ascii')
+    a = 14
+    o = 15
+    b = StateArray([0x01, 0x02, 0x03, 0x04,
+                    0x05, 0x06, 0x07, 0x08,
+                    0x09, 0x0A, 0x0B, 0x0C,
+                    0x0D, 0x0E, 0x0F, 0x10], rounds=a, key=key3)
+    print(b.__dict__)
+    b.print_state()
+    time_it(b.AES_encrypt)
     b.print_state()
     # b.rows_down()
     # b.print_state()

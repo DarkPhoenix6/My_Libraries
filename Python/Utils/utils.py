@@ -14,6 +14,7 @@ import collections
 import math
 from fractions import Fraction
 from collections import Counter
+from binascii import unhexlify, b2a_base64
 AES_modulus2 = 0b100011011
 pie = math.pi * math.e
 
@@ -62,6 +63,10 @@ def bytes_to_int(data):
 
 def tuple_of_bytes(b: bytes):
     return tuple(bytes([i]) for i in b)
+
+
+def hex_to_base64(hex_string) -> str:
+    return b2a_base64(unhexlify(hex_string))
 
 
 def mod_gen(n, m, s=0):
@@ -152,10 +157,15 @@ def xor_(var: bytes, key: bytes):
 
 
 def xor_bytes(x, y):
+    return bytes(xor_int_list(x, y))
+
+
+def xor_int_list(x, y):
     z = []
     for i in range(len(x)):
         z.append(x[i] ^ y[i])
-    return bytes(z)
+    return z
+
 
 def flip_bit(number, n):
     mask = (0b1 << n - 1)
