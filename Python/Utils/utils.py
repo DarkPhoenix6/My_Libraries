@@ -12,6 +12,7 @@ import ctypes
 import sys
 import collections
 import math
+import os, fnmatch
 from fractions import Fraction
 from collections import Counter
 from binascii import unhexlify, b2a_base64
@@ -1002,3 +1003,34 @@ def intersect_lists(list_a, list_b):
 
 def memory_address(in_var):
     return hex(id(in_var))
+
+
+def locate(pattern, root=os.curdir):
+    '''Locate all files matching supplied filename pattern in and below
+    supplied root directory.'''
+    for path, dirs, files in os.walk(os.path.abspath(root)):
+        for filename in fnmatch.filter(files, pattern):
+            yield os.path.join(path, filename)
+
+
+def find_first_with_filename(name, path):
+    for root, dirs, files in os.walk(path):
+        if name in files:
+            return os.path.join(root, name)
+
+
+def find_all_with_filename(name, path):
+    result = []
+    for root, dirs, files in os.walk(path):
+        if name in files:
+            result.append(os.path.join(root, name))
+    return result
+
+
+def find_file_with_pattern(pattern, path):
+    result = []
+    for root, dirs, files in os.walk(path):
+        for name in files:
+            if fnmatch.fnmatch(name, pattern):
+                result.append(os.path.join(root, name))
+    return result
