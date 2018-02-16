@@ -37,6 +37,7 @@ class CFKTLHash(object):
         self.circular_rounds = circular_rounds
         self.hash_length = hash_length
         self.work_space = 128
+        self.transpose_key = True
         rc = 0x10
         count = 1
         while len(self.matrix_list) < 4 or (len(self.matrix_list) % 4) != 0:
@@ -112,28 +113,6 @@ class CFKTLHash(object):
                 current_block.subbytes()
             current_block.add_round_key(round_key, transpose_round_key)
 
-    # def CF_hash(self, transpose_round_key=False, iv=[[222 for x in range(4)] for y in range(4)]):
-    # for i in range(0, (self.rounds + 1)):
-    #     t = []
-    #     for j in self.round_keys[i * 4:i * 4 + 4]:
-    #         t += j
-    #     round_key = Matrix.generate_matrix(t, 4, 4)
-    #     if i == 0:
-    #         self.add_iv(iv)
-    #         self.subbytes()
-    #         self.mix_columns()
-    #         self.add_round_key(round_key, transpose_round_key)
-    #     elif i == self.rounds:
-    #         self.subbytes()
-    #         self.CF_hash_block_stages()
-    #         self.add_round_key(round_key, transpose_round_key)
-    #     else:
-    #         self.subbytes()
-    #         self.CF_hash_block_stages()
-    #         self.mix_columns()
-    #         self.subbytes()
-    #         self.add_round_key(round_key, transpose_round_key)
-
     def CF_hash_block_stages(self, current_block):
         self.CF_hash_stage_1(current_block)
         self.CF_hash_stage_2(current_block)
@@ -172,8 +151,10 @@ if __name__ == '__main__':
                    0x0D, 0x0E, 0x0F, 0x10], rounds=a, key=key3)
     c = CFKTLHash([i for i in range(22)], rounds=a, key=key3)
     d = CFKTLHash([i for i in range(52)], rounds=a, key=key3)
+
     b.cascading_cyclic_cipher_block_chaining()
     d.cascading_cyclic_cipher_block_chaining()
+
     print(b.__dict__)
     print(c.__dict__)
     print(d.__dict__)

@@ -86,6 +86,7 @@ class Block(Matrix):
 
     def state_as_one_dimensional_list(self):
         q = []
+
         for i in range(self.columns):
             for j in range(self.rows):
                 q.append(copy.deepcopy(self.state[j][i]))

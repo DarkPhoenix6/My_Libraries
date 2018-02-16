@@ -18,6 +18,7 @@ import math
 import json
 from AES.gen_key_schedule import get_round_keys, set_key
 from ModGen import mod_gen, corrected_mod_gen
+from AES.Error import IncompatibleMatrixError
 
 MISSING = object()
 
@@ -25,6 +26,12 @@ MISSING = object()
 class Matrix(object):
 
     def __init__(self, matrix_list: list, rows=MISSING, columns=MISSING):
+        """
+
+        :param matrix_list:
+        :param rows: an int
+        :param columns: an int
+        """
         if rows == MISSING and columns == MISSING:
             self.rows = int(math.sqrt(len(matrix_list)))
             self.columns = self.rows
@@ -152,6 +159,22 @@ class Matrix(object):
     def rows_down(self):
         a = self.state.pop(self.rows - 1)
         self.state.insert(0, a)
+
+    def __add__(self, other):
+        if self.rows == other.rows and self.columns == other.columns:
+            m = [0 for x in range(self.columns * self.rows)]
+
+            count = 0
+            for i in range(self.rows):
+                for j in range(self.columns):
+                    m[count] = self.state[i][j] + other.state[i][j]
+                    count += 1
+            return Matrix(m, self.rows, self.columns)
+        else:
+            raise IncompatibleMatrixError('The matrices have different row and/or column sizes')
+
+    def __radd__(self, other):
+        return self.__add__(other)
 
 
 
